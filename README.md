@@ -1,39 +1,27 @@
-**Welcome to your Base44 project** 
+**Welcome to your City App Landing Page**
 
 **About**
 
-View and Edit  your app on [Base44.com](http://Base44.com) 
-
-This project contains everything you need to run your app locally.
+This is the official landing page for City App - your local social network for Zaragoza. View screenshots, features, and download links.
 
 **Edit the code in your local development environment**
 
-Any change pushed to the repo will also be reflected in the Base44 Builder.
+Any change pushed to the `gh-pages` branch will deploy live to GitHub Pages.
 
-**Prerequisites:** 
+**Prerequisites:**
 
-1. Clone the repository using the project's Git URL 
-2. Navigate to the project directory
+1. Clone the repository: `git clone YOUR_REPO_URL`
+2. Navigate to the project directory: `cd your-app-landing`
 3. Install dependencies: `npm install`
-4. Create an `.env.local` file and set the right environment variables
+4. Run locally: `npm run dev`
 
-```
-VITE_BASE44_APP_ID=your_app_id
-VITE_BASE44_APP_BASE_URL=your_backend_url
+**Deploy to GitHub Pages**
 
-e.g.
-VITE_BASE44_APP_ID=cbef744a8545c389ef439ea6
-VITE_BASE44_APP_BASE_URL=https://my-to-do-list-81bfaad7.base44.app
-```
-
-Run the app: `npm run dev`
-
-**Publish your changes**
-
-Open [Base44.com](http://Base44.com) and click on Publish.
-
-**Docs & Support**
-
+```bash
+git add .
+git commit -m "Update landing page"
+git push origin main
+git push origin gh-pages
 Documentation: [https://docs.base44.com/Integrations/Using-GitHub](https://docs.base44.com/Integrations/Using-GitHub)
 
 Support: [https://app.base44.com/support](https://app.base44.com/support)
