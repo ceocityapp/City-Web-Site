@@ -1,0 +1,2451 @@
+/* ============================================================================
+   City App — Website Foundation (Phase 1)
+   ============================================================================
+
+   The visual system for the public business website. Everything is scoped
+   under `.ca` so the marketing site and the product shell (which has its own
+   shadcn/Tailwind theme and a dark-mode class) never contaminate each other.
+
+   How the system works
+   --------------------
+   Sections do not hard-code colours. Each section declares a *tone* —
+   `data-tone="dark"` or `data-tone="light"` — and the tone re-binds a small
+   set of contextual tokens (`--ca-bg`, `--ca-fg`, `--ca-line`, `--ca-accent`…).
+   Every component below reads only those contextual tokens, so the same button,
+   rule or grid renders correctly in either environment and the page can
+   alternate Dark → Light → Dark → Light without a single override.
+
+   Green is an accent, never a surface. It appears on the mark, on the primary
+   action, on the eyebrow dot, and on exactly one cell of the platform grid.
+
+   Sections
+     1. Tokens              6. Buttons
+     2. Reset & base        7. Navigation
+     3. Layout              8. Placeholder frame
+     4. Sections & tone     9. Platform grid
+     5. Typography         10. Stats / footer / a11y
+   ========================================================================== */
+
+@layer components {
+  /* ==========================================================================
+     1. Tokens
+     ========================================================================== */
+
+  .ca {
+    /* --- Brand green ------------------------------------------------------
+       The base three stay as the brand constants; the four above them are the
+       brighter, more digital end of the range, used only in gradients and only
+       against the dark environment. */
+    --ca-green: #18b957;
+    --ca-green-bright: #25d366;
+    --ca-green-deep: #0b7a3d;
+    --ca-green-teal: #00c98b;
+
+    --ca-green-vivid: #2ee86f;
+    --ca-green-spring: #00e5a0;
+    --ca-green-lime: #7be837;
+    --ca-green-aqua: #00d9c0;
+
+    /* Five gradients rather than one. The hero rotator cycles them so the
+       accent has variety without any single moment being loud; everything else
+       on the site uses grad-1 only. Every stop is bright enough that ink text
+       stays legible on top of it. */
+    --ca-grad-1: linear-gradient(100deg, #25d366 0%, #00e5a0 100%);
+    --ca-grad-2: linear-gradient(100deg, #7be837 0%, #16d46b 100%);
+    --ca-grad-3: linear-gradient(100deg, #00e5a0 0%, #00d9c0 100%);
+    --ca-grad-4: linear-gradient(100deg, #2ee86f 0%, #a6f03c 100%);
+    --ca-grad-5: linear-gradient(100deg, #16d46b 0%, #4be8b0 100%);
+
+    /* Kept as the mark's fill. */
+    --ca-green-flow: var(--ca-grad-1);
+
+    /* --- Dark environment ------------------------------------------------- */
+    --ca-ink: #07100c;
+    --ca-ink-raised: #0d1712;
+    --ca-ink-surface: #111c17;
+
+    /* --- Light environment ------------------------------------------------ */
+    --ca-white: #ffffff;
+    --ca-paper: #f6f8f6;
+    --ca-paper-surface: #eef2ef;
+    --ca-text: #101512;
+    --ca-text-muted: #66736c;
+
+    /* --- Type ------------------------------------------------------------- */
+    --ca-font: var(--font-manrope), "Manrope", ui-sans-serif, system-ui,
+      -apple-system, "Segoe UI", Roboto, sans-serif;
+
+    /* The stylish half. Restricted to the hero rotator — see §12. */
+    --ca-font-editorial: var(--font-editorial), "Instrument Serif", Georgia,
+      "Times New Roman", serif;
+
+    /* A five-step scale. Headlines are large and tightly tracked; body text
+       stays generous. Nothing between these steps is allowed. */
+    --ca-t-display: clamp(2.75rem, 6.2vw, 5.5rem); /* 44 → 88 */
+    --ca-t-h2: clamp(2.125rem, 4.2vw, 3.5rem); /*  34 → 56 */
+    --ca-t-h3: clamp(1.375rem, 1.8vw, 1.75rem); /*  22 → 28 */
+    --ca-t-h4: 1.0625rem; /*        17 */
+    --ca-t-lead: clamp(1.0625rem, 1.25vw, 1.25rem); /*  17 → 20 */
+    --ca-t-body: 1rem;
+    --ca-t-small: 0.875rem;
+    --ca-t-eyebrow: 0.75rem;
+
+    /* Tracking tightens as size grows — the single rule that keeps large
+       headlines from looking loose and small text from looking cramped. */
+    --ca-track-display: -0.035em;
+    --ca-track-h2: -0.03em;
+    --ca-track-h3: -0.02em;
+    --ca-track-eyebrow: 0.14em;
+
+    /* --- Space ------------------------------------------------------------ */
+    --ca-gutter: clamp(1.25rem, 4vw, 2.5rem);
+    --ca-max: 1280px; /* 1200px of content at full gutters */
+    --ca-max-text: 46rem; /* measure for prose */
+    --ca-section: clamp(6rem, 10vw, 10.5rem); /* 96 → 168 vertical rhythm */
+    --ca-stack: clamp(1.5rem, 2.5vw, 2.25rem);
+
+    /* --- Radii ------------------------------------------------------------
+       Deliberately few, deliberately not applied to everything. Grid cells and
+       section edges stay square; only floating or framed things round. */
+    --ca-r-sm: 12px; /* buttons, chips */
+    --ca-r-md: 16px; /* the navigation bar */
+    --ca-r-lg: 24px; /* grid container, cards */
+    --ca-r-xl: 32px; /* large reserved visual areas */
+
+    /* --- Elevation --------------------------------------------------------
+       Soft and low. No glows. */
+    --ca-shadow-nav: 0 1px 2px rgba(7, 16, 12, 0.06),
+      0 16px 40px -20px rgba(7, 16, 12, 0.45);
+    --ca-shadow-soft: 0 1px 2px rgba(7, 16, 12, 0.03),
+      0 24px 48px -32px rgba(7, 16, 12, 0.18);
+
+    /* --- Motion ------------------------------------------------------------
+       Hover feedback only. No scroll-driven anything. */
+    --ca-ease: cubic-bezier(0.22, 0.61, 0.36, 1);
+    --ca-fast: 150ms;
+    --ca-slow: 260ms;
+
+    /* --- Contextual defaults (dark) --------------------------------------- */
+    --ca-bg: var(--ca-ink);
+    --ca-surface: var(--ca-ink-surface);
+    --ca-fg: #ffffff;
+    --ca-fg-soft: rgba(255, 255, 255, 0.78);
+    --ca-fg-muted: #8c9a93;
+    --ca-line: rgba(255, 255, 255, 0.08);
+    --ca-line-strong: rgba(255, 255, 255, 0.16);
+    --ca-accent: var(--ca-green-vivid);
+  }
+
+  /* ==========================================================================
+     2. Reset & base
+     ========================================================================== */
+
+  .ca {
+    font-family: var(--ca-font);
+    font-size: var(--ca-t-body);
+    line-height: 1.6;
+    color: var(--ca-fg);
+    background: var(--ca-ink);
+    font-feature-settings: "ss01", "cv11";
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+  }
+
+  .ca *,
+  .ca *::before,
+  .ca *::after {
+    box-sizing: border-box;
+  }
+
+  .ca :focus-visible {
+    outline: 2px solid var(--ca-green-bright);
+    outline-offset: 3px;
+    border-radius: 4px;
+  }
+
+  /* ==========================================================================
+     3. Layout
+     ========================================================================== */
+
+  /* The one container. Every section aligns to it — nothing sets its own
+     max-width, which is what keeps the vertical edges of the page true. */
+  .ca-shell {
+    width: 100%;
+    max-width: var(--ca-max);
+    margin-inline: auto;
+    padding-inline: var(--ca-gutter);
+  }
+
+  /* Prose measure. Applied to lead paragraphs so lines never run long. */
+  .ca-measure {
+    max-width: var(--ca-max-text);
+  }
+
+  .ca-measure--narrow {
+    max-width: 34rem;
+  }
+
+  /* Vertical stack rhythm inside a section header. */
+  .ca-stack {
+    display: flex;
+    flex-direction: column;
+    gap: var(--ca-stack);
+    align-items: flex-start;
+  }
+
+  .ca-stack--center {
+    align-items: center;
+    text-align: center;
+  }
+
+  /* Two-column section header: statement left, supporting text right. Collapses
+     to a single column below the desktop breakpoint. */
+  .ca-split {
+    display: grid;
+    gap: clamp(2rem, 4vw, 4rem);
+    align-items: end;
+  }
+
+  @media (min-width: 900px) {
+    .ca-split {
+      grid-template-columns: minmax(0, 1.35fr) minmax(0, 1fr);
+    }
+  }
+
+  /* ==========================================================================
+     4. Sections & tone
+     ========================================================================== */
+
+  .ca-sec {
+    position: relative;
+    background: var(--ca-bg);
+    color: var(--ca-fg);
+    padding-block: var(--ca-section);
+  }
+
+  /* Re-bind the contextual tokens. Everything downstream follows. */
+  .ca-sec[data-tone="dark"],
+  .ca [data-tone="dark"] {
+    --ca-bg: var(--ca-ink);
+    --ca-surface: var(--ca-ink-surface);
+    --ca-fg: #ffffff;
+    --ca-fg-soft: rgba(255, 255, 255, 0.78);
+    --ca-fg-muted: #8c9a93;
+    --ca-line: rgba(255, 255, 255, 0.08);
+    --ca-line-strong: rgba(255, 255, 255, 0.16);
+    --ca-accent: var(--ca-green-vivid);
+  }
+
+  .ca-sec[data-tone="light"],
+  .ca [data-tone="light"] {
+    --ca-bg: var(--ca-white);
+    --ca-surface: var(--ca-paper);
+    --ca-fg: var(--ca-text);
+    --ca-fg-soft: rgba(16, 21, 18, 0.72);
+    --ca-fg-muted: var(--ca-text-muted);
+    --ca-line: rgba(16, 21, 18, 0.09);
+    --ca-line-strong: rgba(16, 21, 18, 0.18);
+    --ca-accent: var(--ca-green-deep);
+  }
+
+  /* Light section sitting on the soft background instead of pure white, so the
+     grid's white cells have something to sit on. */
+  .ca-sec[data-tone="light"][data-surface="paper"] {
+    --ca-bg: var(--ca-paper);
+    --ca-surface: var(--ca-white);
+  }
+
+  /* Secondary dark plane — used for the footer so it reads as a distinct
+     terminal band rather than a continuation of the section above it. */
+  .ca-sec[data-tone="dark"][data-surface="raised"] {
+    --ca-bg: var(--ca-ink-raised);
+  }
+
+  /* A hairline at the top edge of a section. Used at tone changes to make the
+     seam intentional rather than accidental. */
+  .ca-sec--seam {
+    border-top: 1px solid var(--ca-line);
+  }
+
+  .ca-sec--tight {
+    padding-block: clamp(4rem, 6vw, 6rem);
+  }
+
+  /* ==========================================================================
+     5. Typography
+     ========================================================================== */
+
+  /* Eyebrow — small, tracked, with a green tick. The only place a label
+     is allowed to shout. */
+  .ca-eyebrow {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.625rem;
+    margin: 0;
+    font-size: var(--ca-t-eyebrow);
+    font-weight: 600;
+    letter-spacing: var(--ca-track-eyebrow);
+    text-transform: uppercase;
+    color: var(--ca-fg-muted);
+  }
+
+  .ca-eyebrow::before {
+    content: "";
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--ca-accent);
+    flex: none;
+  }
+
+  /* On dark the tick is large enough to carry the gradient; on light it stays
+     a flat deep green, because a gradient at 6px on white is just noise. */
+  [data-tone="dark"] .ca-eyebrow::before {
+    background-image: var(--ca-grad-1);
+  }
+
+  .ca-display,
+  .ca-h2,
+  .ca-h3 {
+    margin: 0;
+    font-weight: 600;
+    color: var(--ca-fg);
+    text-wrap: balance;
+  }
+
+  .ca-display {
+    font-size: var(--ca-t-display);
+    line-height: 1;
+    letter-spacing: var(--ca-track-display);
+  }
+
+  .ca-h2 {
+    font-size: var(--ca-t-h2);
+    line-height: 1.04;
+    letter-spacing: var(--ca-track-h2);
+  }
+
+  .ca-h3 {
+    font-size: var(--ca-t-h3);
+    line-height: 1.2;
+    letter-spacing: var(--ca-track-h3);
+  }
+
+  /* Column heading / small title. */
+  .ca-h4 {
+    margin: 0;
+    font-size: var(--ca-t-h4);
+    font-weight: 600;
+    line-height: 1.35;
+    letter-spacing: -0.01em;
+    color: var(--ca-fg);
+  }
+
+  .ca-lead {
+    margin: 0;
+    font-size: var(--ca-t-lead);
+    line-height: 1.55;
+    font-weight: 400;
+    color: var(--ca-fg-soft);
+    text-wrap: pretty;
+  }
+
+  .ca-body {
+    margin: 0;
+    font-size: var(--ca-t-body);
+    line-height: 1.65;
+    color: var(--ca-fg-muted);
+    text-wrap: pretty;
+  }
+
+  .ca-small {
+    margin: 0;
+    font-size: var(--ca-t-small);
+    line-height: 1.6;
+    color: var(--ca-fg-muted);
+  }
+
+  /* Sequence numbers on grid cells and steps. */
+  .ca-index {
+    font-size: var(--ca-t-small);
+    font-weight: 500;
+    font-variant-numeric: tabular-nums;
+    letter-spacing: 0.06em;
+    color: var(--ca-fg-muted);
+    opacity: 0.7;
+  }
+
+  .ca-accent-text {
+    color: var(--ca-accent);
+  }
+
+  /* Hairline divider. */
+  .ca-rule {
+    height: 1px;
+    border: 0;
+    margin: 0;
+    background: var(--ca-line);
+  }
+
+  /* ==========================================================================
+     6. Buttons
+     ========================================================================== */
+
+  .ca-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    padding: 0.8125rem 1.375rem;
+    border: 1px solid transparent;
+    border-radius: var(--ca-r-sm);
+    font-family: inherit;
+    font-size: 0.9375rem;
+    font-weight: 600;
+    letter-spacing: -0.005em;
+    line-height: 1;
+    text-decoration: none;
+    white-space: nowrap;
+    cursor: pointer;
+    transition: background-color var(--ca-fast) var(--ca-ease),
+      border-color var(--ca-fast) var(--ca-ease),
+      color var(--ca-fast) var(--ca-ease),
+      transform var(--ca-fast) var(--ca-ease);
+  }
+
+  .ca-btn:active {
+    transform: translateY(1px);
+  }
+
+  /* Primary — the brand gradient with ink text. Dark text on green is both the
+     accessible pairing (9.5:1 against the darkest stop) and the more
+     expensive-looking one. Gradients can't interpolate on hover, so the
+     feedback is a brightness lift rather than a colour change. */
+  .ca-btn--primary {
+    background-image: var(--ca-grad-1);
+    color: var(--ca-ink);
+    transition: filter var(--ca-fast) var(--ca-ease),
+      transform var(--ca-fast) var(--ca-ease);
+  }
+
+  .ca-btn--primary:hover {
+    filter: brightness(1.07) saturate(1.05);
+  }
+
+  /* Secondary — hairline outline that adopts the surrounding tone. */
+  .ca-btn--outline {
+    background: transparent;
+    border-color: var(--ca-line-strong);
+    color: var(--ca-fg);
+  }
+
+  .ca-btn--outline:hover {
+    border-color: var(--ca-fg);
+    background: color-mix(in srgb, var(--ca-fg) 6%, transparent);
+  }
+
+  /* Quiet — a text action with a rule under it. */
+  .ca-btn--quiet {
+    padding-inline: 0;
+    background: none;
+    color: var(--ca-fg);
+    border-radius: 0;
+    border-bottom: 1px solid var(--ca-line-strong);
+    padding-bottom: 0.5rem;
+  }
+
+  .ca-btn--quiet:hover {
+    border-bottom-color: var(--ca-accent);
+    color: var(--ca-accent);
+  }
+
+  .ca-btn--sm {
+    padding: 0.5625rem 1rem;
+    font-size: 0.875rem;
+  }
+
+  .ca-btn--lg {
+    padding: 1rem 1.75rem;
+    font-size: 1rem;
+  }
+
+  .ca-actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.75rem;
+  }
+
+  /* Two actions stacked at their natural widths read as ragged on a phone;
+     full-bleed buttons are the calmer answer. */
+  @media (max-width: 479px) {
+    .ca-actions > .ca-btn {
+      flex: 1 1 100%;
+    }
+  }
+
+  /* ==========================================================================
+     7. Navigation
+     ========================================================================== */
+
+  /* Fixed, not sticky: the hero runs full-bleed video to the top of the
+     viewport, so the bar has to float over it rather than occupy flow space
+     above it. */
+  .ca-nav {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 60;
+    padding-block: 1rem;
+  }
+
+  /* --- Liquid glass -------------------------------------------------------
+     Thin rather than frosted. The tint is low enough that the video reads
+     through it, and the work is done by blur, saturation and two specular
+     edges instead of opacity — which is the difference between glass that
+     looks like liquid and glass that looks like grey plastic.
+
+     The gradient tint keeps the bar near-transparent at its base and settles
+     the labels into a slightly denser top, so the same glass stays legible
+     over both the film and the page below. A slow diagonal sheen drifts across
+     the surface (see ::before) so the glass reads as catching light, not as a
+     flat sticker. */
+  .ca-nav__bar {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    height: 60px;
+    padding-inline: 0.875rem;
+    border: 1px solid rgba(255, 255, 255, 0.16);
+    border-radius: 22px;
+    background: linear-gradient(
+      180deg,
+      rgba(10, 20, 15, 0.26) 0%,
+      rgba(10, 20, 15, 0.12) 100%
+    );
+    box-shadow:
+      /* the lit top edge and the faint bounce along the bottom */
+      inset 0 1px 0 rgba(255, 255, 255, 0.26),
+      inset 0 -1px 0 rgba(255, 255, 255, 0.06),
+      0 12px 44px -16px rgba(0, 0, 0, 0.6);
+    -webkit-backdrop-filter: blur(40px) saturate(230%);
+    backdrop-filter: blur(40px) saturate(230%);
+    transition:
+      background var(--ca-slow) var(--ca-ease),
+      border-color var(--ca-slow) var(--ca-ease),
+      box-shadow var(--ca-slow) var(--ca-ease);
+  }
+
+  /* Past the hero the bar sits over white sections. Still glass — still
+     blurred and translucent — but the tint steps up just enough to carry the
+     white labels over any background. The gradient keeps it lighter at the
+     base, so the surface never reads as a solid plate. */
+  .ca-nav__bar[data-past="true"] {
+    background: linear-gradient(
+      180deg,
+      rgba(7, 16, 12, 0.62) 0%,
+      rgba(7, 16, 12, 0.4) 100%
+    );
+    border-color: rgba(255, 255, 255, 0.12);
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.18),
+      inset 0 -1px 0 rgba(255, 255, 255, 0.04),
+      0 12px 44px -20px rgba(0, 0, 0, 0.5);
+  }
+
+  /* The specular sheen: a diagonal catch-light on top of the edge highlight,
+     kept under 20% so it reads as a reflection rather than a gradient. It
+     drifts a hair on a very slow clock so the glass appears to be alive. */
+  .ca-nav__bar::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    pointer-events: none;
+    background:
+      linear-gradient(
+        115deg,
+        rgba(255, 255, 255, 0.18) 0%,
+        rgba(255, 255, 255, 0.05) 30%,
+        rgba(255, 255, 255, 0) 48%
+      ),
+      linear-gradient(
+        180deg,
+        rgba(255, 255, 255, 0.1) 0%,
+        rgba(255, 255, 255, 0.02) 45%,
+        rgba(255, 255, 255, 0) 66%
+      );
+    animation: ca-glass-drift 16s var(--ca-ease) infinite;
+  }
+
+  @keyframes ca-glass-drift {
+    0%,
+    100% {
+      transform: translateX(-1.5%);
+    }
+    50% {
+      transform: translateX(1.5%);
+    }
+  }
+
+  /* Everything inside sits above the sheen. */
+  .ca-nav__bar > * {
+    position: relative;
+    z-index: 1;
+  }
+
+  .ca-nav__brand {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.625rem;
+    padding-inline: 0.375rem;
+    text-decoration: none;
+    color: #fff;
+    font-weight: 600;
+    font-size: 1rem;
+    letter-spacing: -0.02em;
+    /* A soft halo keeps the mark legible through the more transparent glass. */
+    text-shadow: 0 1px 12px rgba(7, 16, 12, 0.5);
+  }
+
+  .ca-nav__links {
+    display: none;
+    align-items: center;
+    gap: 0.25rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .ca-nav__spacer {
+    flex: 1;
+  }
+
+  .ca-nav__link {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.5rem 0.75rem;
+    border-radius: 8px;
+    font-size: 0.9375rem;
+    font-weight: 500;
+    color: rgba(255, 255, 255, 0.8);
+    text-decoration: none;
+    text-shadow: 0 1px 10px rgba(7, 16, 12, 0.5);
+    transition: color var(--ca-fast) var(--ca-ease),
+      background-color var(--ca-fast) var(--ca-ease);
+  }
+
+  .ca-nav__link:hover {
+    color: #fff;
+    background: rgba(255, 255, 255, 0.06);
+  }
+
+  .ca-nav__right {
+    display: none;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .ca-nav__divider {
+    width: 1px;
+    height: 22px;
+    background: rgba(255, 255, 255, 0.12);
+    margin-inline: 0.25rem;
+  }
+
+  .ca-nav__toggle {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    margin-left: auto;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 10px;
+    background: transparent;
+    color: #fff;
+    cursor: pointer;
+    transition: background-color var(--ca-fast) var(--ca-ease);
+  }
+
+  .ca-nav__toggle:hover {
+    background: rgba(255, 255, 255, 0.07);
+  }
+
+  /* Mobile panel — the same glass, slightly denser because it carries a full
+     menu over moving video. */
+  .ca-nav__panel {
+    position: relative;
+    margin-top: 0.5rem;
+    padding: 0.5rem;
+    border: 1px solid rgba(255, 255, 255, 0.16);
+    border-radius: 22px;
+    background: linear-gradient(
+      180deg,
+      rgba(10, 20, 15, 0.5) 0%,
+      rgba(10, 20, 15, 0.34) 100%
+    );
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.2),
+      0 16px 44px -16px rgba(0, 0, 0, 0.7);
+    -webkit-backdrop-filter: blur(42px) saturate(230%);
+    backdrop-filter: blur(42px) saturate(230%);
+  }
+
+  .ca-nav__panel ul {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .ca-nav__panel .ca-nav__link {
+    display: flex;
+    padding: 0.75rem;
+    font-size: 1rem;
+  }
+
+  .ca-nav__panel-actions {
+    display: grid;
+    gap: 0.5rem;
+    padding: 0.5rem 0.5rem 0.25rem;
+    margin-top: 0.25rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+  }
+
+  @media (min-width: 1000px) {
+    .ca-nav__links,
+    .ca-nav__right {
+      display: flex;
+    }
+
+    .ca-nav__toggle {
+      display: none;
+    }
+  }
+
+  /* --- The mark ----------------------------------------------------------
+     The real identity: a bare node graph, no plate behind it. The SVG carries
+     its own gradient, so there is nothing to style here but the box. */
+  .ca-mark {
+    display: block;
+    flex: none;
+  }
+
+  /* The name beside it — heavier and tighter than body type, which is what
+     makes it read as a wordmark rather than as a heading. */
+  .ca-wordmark {
+    font-weight: 800;
+    letter-spacing: -0.035em;
+  }
+
+  /* ==========================================================================
+     9. Platform grid
+     ==========================================================================
+     A single bordered plane divided by hairlines, rather than a scatter of
+     floating cards. One container radius, no per-cell shadows. */
+
+  .ca-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 1px;
+    border: 1px solid var(--ca-line);
+    border-radius: var(--ca-r-lg);
+    background: var(--ca-line);
+    overflow: hidden;
+  }
+
+  @media (min-width: 640px) {
+    .ca-grid {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+
+  @media (min-width: 980px) {
+    .ca-grid {
+      grid-template-columns: repeat(3, 1fr);
+    }
+  }
+
+  .ca-cell {
+    display: flex;
+    flex-direction: column;
+    gap: 0.625rem;
+    min-height: 200px;
+    padding: clamp(1.5rem, 2.4vw, 2.125rem);
+    background: var(--ca-surface);
+  }
+
+  .ca-cell__title {
+    margin-top: 0.75rem;
+  }
+
+  /* The one green surface on the page. Spans the remainder of the last row so
+     the grid closes cleanly, and gives the section a single accent moment. */
+  .ca-cell--accent {
+    background: color-mix(in srgb, var(--ca-green) 7%, var(--ca-surface));
+    justify-content: space-between;
+  }
+
+  /* Only spans once the grid is three wide: seven cells plus a double closes
+     three full rows. At two columns the eight cells already close four rows,
+     so a span there would punch a hole in the last-but-one. */
+  @media (min-width: 980px) {
+    .ca-cell--accent {
+      grid-column: span 2;
+    }
+  }
+
+  /* ==========================================================================
+     10. Stats, footer, accessibility
+     ========================================================================== */
+
+  /* Reserved statistics row — values are placeholders until the numbers are
+     real; the slots are sized for them now. */
+  .ca-stats {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1px;
+    background: var(--ca-line);
+    border-block: 1px solid var(--ca-line);
+  }
+
+  @media (min-width: 860px) {
+    .ca-stats {
+      grid-template-columns: repeat(4, 1fr);
+    }
+  }
+
+  .ca-stat {
+    padding: clamp(1.5rem, 2.4vw, 2rem) clamp(1rem, 2vw, 1.75rem);
+    background: var(--ca-bg);
+  }
+
+  .ca-stat__value {
+    display: block;
+    font-size: clamp(2rem, 3.2vw, 2.75rem);
+    font-weight: 600;
+    line-height: 1;
+    letter-spacing: -0.03em;
+    color: var(--ca-fg);
+  }
+
+  .ca-stat__label {
+    display: block;
+    margin-top: 0.75rem;
+    font-size: var(--ca-t-small);
+    color: var(--ca-fg-muted);
+  }
+
+  /* --- Footer ------------------------------------------------------------ */
+
+  .ca-footer__top {
+    display: grid;
+    gap: clamp(2.5rem, 5vw, 4rem);
+  }
+
+  @media (min-width: 900px) {
+    .ca-footer__top {
+      grid-template-columns: minmax(0, 1fr) minmax(0, 2.1fr);
+    }
+  }
+
+  /* Four columns, and a tighter gutter between them than the one separating
+     them from the brand block. */
+  @media (min-width: 1120px) {
+    .ca-footer__cols {
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 1.5rem;
+    }
+  }
+
+  .ca-footer__cols {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: clamp(2rem, 3.5vw, 2.5rem);
+  }
+
+  @media (min-width: 560px) {
+    .ca-footer__cols {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+  }
+
+  .ca-footer__col ul {
+    margin: 1rem 0 0;
+    padding: 0;
+    list-style: none;
+    display: grid;
+    gap: 0.625rem;
+  }
+
+  .ca-footer__heading {
+    font-size: var(--ca-t-small);
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    color: var(--ca-fg);
+  }
+
+  .ca-link {
+    font-size: 0.9375rem;
+    color: var(--ca-fg-muted);
+    text-decoration: none;
+    transition: color var(--ca-fast) var(--ca-ease);
+  }
+
+  .ca-link:hover {
+    color: var(--ca-fg);
+  }
+
+  .ca-footer__bottom {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-top: clamp(3rem, 5vw, 4.5rem);
+    padding-top: 1.75rem;
+    border-top: 1px solid var(--ca-line);
+  }
+
+  .ca-footer__legal {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1.25rem;
+  }
+
+  /* --- Accessibility ------------------------------------------------------ */
+
+  .ca-skip {
+    position: absolute;
+    left: -9999px;
+    top: 0;
+    z-index: 80;
+  }
+
+  .ca-skip:focus-visible {
+    left: 1rem;
+    top: 1rem;
+    padding: 0.75rem 1.25rem;
+    border-radius: var(--ca-r-sm);
+    background: #fff;
+    color: var(--ca-text);
+    font-weight: 600;
+    text-decoration: none;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .ca *,
+    .ca *::before,
+    .ca *::after {
+      transition-duration: 0.01ms !important;
+      animation-duration: 0.01ms !important;
+    }
+  }
+
+  /* ==========================================================================
+     11. Compositions
+     ==========================================================================
+     The per-section adjustments — nothing here introduces a new colour, size
+     or radius, it only spends the tokens above. If a section needs a value
+     that is not already in §1, the scale is wrong, not the section. */
+
+  /* Anchored sections clear the floating navigation when jumped to. */
+  .ca [id] {
+    scroll-margin-top: 6rem;
+  }
+
+  /* --- Hero ----------------------------------------------------------------
+     A full-viewport cinematic block. The navigation is fixed and no longer
+     occupies flow space, so the top padding here is what clears it. */
+
+  .ca-hero {
+    position: relative;
+    isolation: isolate;
+    overflow: clip;
+    display: flex;
+    align-items: center;
+    min-height: 100vh;
+    min-height: 100svh; /* phones: exclude the collapsing URL bar */
+    padding-top: clamp(7rem, 12vh, 9rem);
+    padding-bottom: clamp(4rem, 9vh, 7rem);
+  }
+
+  .ca-hero .ca-shell {
+    width: 100%;
+  }
+
+  /* --- Video bed ---------------------------------------------------------- */
+
+  .ca-hero__media {
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    background: var(--ca-ink);
+  }
+
+  .ca-hero__media video,
+  .ca-hero__media img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+
+  /* Two crossed gradients rather than a flat wash: the horizontal one buys
+     contrast for the text on the left while leaving the sun and the towers
+     legible on the right, and the vertical one seats the navigation at the top
+     and lands the section into the ink seam at the bottom. */
+  .ca-hero__scrim {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background:
+      linear-gradient(
+        90deg,
+        rgba(7, 16, 12, 0.88) 0%,
+        rgba(7, 16, 12, 0.72) 36%,
+        rgba(7, 16, 12, 0.24) 70%,
+        rgba(7, 16, 12, 0) 100%
+      ),
+      linear-gradient(
+        180deg,
+        rgba(7, 16, 12, 0.55) 0%,
+        rgba(7, 16, 12, 0.08) 24%,
+        rgba(7, 16, 12, 0.12) 56%,
+        rgba(7, 16, 12, 0.9) 100%
+      );
+  }
+
+  /* Phones crop the 16:9 frame to a portrait slice, which puts bright sky and
+     sunlit stone directly behind the headline — measured at 1.9:1 with the
+     desktop treatment. There is no horizontal room to escape into, so the
+     scrim splits the frame instead: the top third stays open so the towers
+     still read as an image, and everything from the text down goes heavy. */
+  @media (max-width: 759px) {
+    .ca-hero__scrim {
+      background: linear-gradient(
+        180deg,
+        rgba(7, 16, 12, 0.55) 0%,
+        rgba(7, 16, 12, 0.34) 14%,
+        rgba(7, 16, 12, 0.88) 38%,
+        rgba(7, 16, 12, 0.9) 72%,
+        rgba(7, 16, 12, 0.96) 100%
+      );
+    }
+  }
+
+  /* --- Hero type ---------------------------------------------------------- */
+
+  .ca-hero__head {
+    gap: clamp(1.5rem, 2.4vw, 2rem);
+  }
+
+  /* The muted grey that works on a flat ink section drops to ~3.9:1 against the
+     brightest frames of the video. At 12px that is below AA, so the eyebrow
+     goes near-white here — the only place on the site where it does. */
+  .ca-hero .ca-eyebrow {
+    color: rgba(255, 255, 255, 0.82);
+  }
+
+  .ca-hero__title {
+    display: flex;
+    flex-direction: column;
+    max-width: 15em;
+  }
+
+  .ca-hero__head .ca-actions {
+    margin-top: 0.5rem;
+  }
+
+  /* --- Mission ------------------------------------------------------------ */
+
+  /* A lone eyebrow above a split block. */
+  .ca-shell > .ca-eyebrow {
+    margin-bottom: clamp(2rem, 3vw, 3rem);
+  }
+
+  @media (min-width: 900px) {
+    /* More room for the statement than the standard split gives — this is the
+       one section where the type is the entire content. */
+    .ca-mission {
+      grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr);
+    }
+  }
+
+  /* --- Platform ----------------------------------------------------------- */
+
+  .ca-platform__head,
+  .ca-cities__head {
+    margin-bottom: clamp(3rem, 5vw, 4.5rem);
+  }
+
+  /* --- Cities ------------------------------------------------------------- */
+
+  .ca-cities__visual,
+  .ca-cities__stats {
+    margin-top: clamp(3rem, 5vw, 4.5rem);
+  }
+
+  /* --- Final CTA ---------------------------------------------------------- */
+
+  .ca-cta {
+    gap: clamp(1.25rem, 2vw, 1.75rem);
+    margin-inline: auto;
+  }
+
+  .ca-cta__actions {
+    margin-top: 0.75rem;
+    justify-content: center;
+  }
+
+  /* --- Footer ------------------------------------------------------------- */
+
+  .ca-footer__brand {
+    gap: 1.25rem;
+  }
+
+  /* ==========================================================================
+     12. Rotator
+     ==========================================================================
+     The second line of the hero headline. Manrope states the sentence; this
+     finishes it in Instrument Serif italic, which is the whole "half corporate,
+     half stylish" idea in one line of type.
+
+     Every word occupies the same grid cell, so the container is already as wide
+     as the longest of them and nothing reflows as they change. The transition
+     is blur and a small vertical drift — no scale, no colour cycling on the
+     element itself; the variety comes from each word carrying its own gradient.
+   */
+
+  .ca-rotator {
+    display: inline-grid;
+    justify-items: start;
+    font-family: var(--ca-font-editorial);
+    font-style: italic;
+    font-weight: 400;
+    /* Instrument Serif sets optically smaller than Manrope at the same size,
+       and its ascenders need the extra leading. */
+    font-size: 1.14em;
+    line-height: 1.06;
+    letter-spacing: -0.012em;
+  }
+
+  .ca-rotator__word {
+    grid-area: 1 / 1;
+    background-image: var(--ca-word-grad, var(--ca-grad-1));
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    /* Painting a gradient into glyphs clips descenders on some engines unless
+       the box is given a little room. */
+    padding-block: 0.06em;
+    padding-inline-end: 0.08em;
+    transition:
+      opacity 700ms var(--ca-ease),
+      filter 700ms var(--ca-ease),
+      transform 700ms var(--ca-ease);
+  }
+
+  /* Waiting below the line, out of focus. */
+  .ca-rotator__word[data-state="idle"] {
+    opacity: 0;
+    filter: blur(16px);
+    transform: translateY(0.16em);
+  }
+
+  .ca-rotator__word[data-state="in"] {
+    opacity: 1;
+    filter: blur(0);
+    transform: translateY(0);
+  }
+
+  /* Leaving upward, so the two never travel the same path. */
+  .ca-rotator__word[data-state="out"] {
+    opacity: 0;
+    filter: blur(16px);
+    transform: translateY(-0.16em);
+  }
+
+  /* With motion reduced the component stops cycling and the first word simply
+     stands still — so it must render sharp rather than in its waiting state. */
+  @media (prefers-reduced-motion: reduce) {
+    .ca-rotator__word[data-state="in"] {
+      filter: none;
+    }
+  }
+
+  /* ==========================================================================
+     13. Overlap
+     ==========================================================================
+     The hero is pinned and the rest of the page rides up over it on a rounded
+     lip. Pure CSS — a sticky hero plus a negative margin on the section that
+     follows; nothing measures scroll.
+
+     Consequence worth knowing: a pinned hero never stops intersecting the
+     viewport, so anything that needs to know "have we left the hero" observes
+     the zero-height marker at its natural bottom instead (`.ca-hero-end`). */
+
+  .ca {
+    --ca-lip: clamp(24px, 3vw, 44px);
+  }
+
+  .ca-hero {
+    position: sticky;
+    top: 0;
+    z-index: 0;
+  }
+
+  /*
+   * The scroll sentinel. Spans the hero's flow region and scrolls normally,
+   * unlike the pinned hero itself.
+   *
+   * It is full height rather than a marker line on purpose: an IntersectionObserver
+   * only reports when intersection *changes*, so a 1px target can be jumped clean
+   * over — by an anchor link, a refresh that restores scroll, or a fast flick —
+   * leaving isIntersecting false on both sides and the callback silent. A target
+   * as tall as the hero always straddles the boundary, so entry and exit are
+   * unmissable.
+   */
+  .ca > main {
+    position: relative;
+  }
+
+  .ca-hero-end {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 1px;
+    height: 100vh;
+    height: 100svh;
+    pointer-events: none;
+  }
+
+  .ca-sec--over {
+    position: relative;
+    z-index: 1;
+    margin-top: calc(var(--ca-lip) * -1);
+    border-start-start-radius: var(--ca-lip);
+    border-start-end-radius: var(--ca-lip);
+    /* The lip needs a shadow or the join reads as a flat sticker. */
+    box-shadow: 0 -30px 60px -30px rgba(7, 16, 12, 0.6);
+  }
+
+  /* ==========================================================================
+     14. Photography
+     ========================================================================== */
+
+  .ca-figure {
+    margin: clamp(3rem, 5vw, 4.5rem) 0 0;
+    border-radius: var(--ca-r-lg);
+    overflow: hidden;
+    line-height: 0;
+    background: var(--ca-surface);
+  }
+
+  .ca-figure img {
+    width: 100%;
+    height: auto;
+    display: block;
+  }
+
+  /* A statement set at h3 size with generous measure — used where a section
+     needs a second voice without a second heading. */
+  .ca-claim {
+    margin-top: clamp(3rem, 5vw, 4.5rem);
+    max-width: 46rem;
+  }
+
+  .ca-claim__text {
+    font-weight: 500;
+    line-height: 1.4;
+  }
+
+  .ca-claim__accent {
+    color: var(--ca-accent);
+  }
+
+  /* ==========================================================================
+     15. Roadmap
+     ========================================================================== */
+
+  /* The photograph and the stage rail read as one object: the image sits
+     directly on top of the rail with only its top corners rounded. */
+  .ca-roadmap__figure {
+    margin-bottom: 0;
+    border-end-start-radius: 0;
+    border-end-end-radius: 0;
+  }
+
+  .ca-roadmap__figure + .ca-stages {
+    border-start-start-radius: 0;
+    border-start-end-radius: 0;
+    border-top: 0;
+  }
+
+  .ca-stages {
+    display: grid;
+    gap: 1px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    background: var(--ca-line);
+    border: 1px solid var(--ca-line);
+    border-radius: var(--ca-r-lg);
+    overflow: hidden;
+  }
+
+  @media (min-width: 860px) {
+    .ca-stages {
+      grid-template-columns: repeat(3, 1fr);
+    }
+  }
+
+  .ca-stage {
+    background: var(--ca-bg);
+  }
+
+  .ca-stage__link {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    padding: clamp(1.5rem, 2.4vw, 2rem);
+    color: inherit;
+    text-decoration: none;
+    transition: background-color var(--ca-fast) var(--ca-ease);
+  }
+
+  /* The floor and the baseline-aligned city name are what keep three side-by-side
+     cards even. Stacked, they only open a dead gap under each status. */
+  @media (min-width: 860px) {
+    .ca-stage__link {
+      min-height: 190px;
+    }
+
+    .ca-stage__city {
+      margin-top: auto;
+    }
+  }
+
+  a.ca-stage__link:hover {
+    background: rgba(255, 255, 255, 0.035);
+  }
+
+  .ca-stage__top {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .ca-stage__dot {
+    width: 8px;
+    height: 8px;
+    flex: none;
+    border-radius: 50%;
+    background: var(--ca-fg-muted);
+  }
+
+  /* The one live city gets a slow breathing halo. It is the only looping
+     animation on the page, so it stays under 10% opacity at its peak. */
+  .ca-stage__dot[data-state="live"] {
+    background: var(--ca-green-vivid);
+    animation: ca-pulse 2.6s var(--ca-ease) infinite;
+  }
+
+  @keyframes ca-pulse {
+    0%,
+    100% {
+      box-shadow: 0 0 0 0 rgba(46, 232, 111, 0.4);
+    }
+    70% {
+      box-shadow: 0 0 0 9px rgba(46, 232, 111, 0);
+    }
+  }
+
+  .ca-stage__dot[data-state="building"] {
+    background: var(--ca-green-lime);
+  }
+
+  .ca-stage__dot[data-state="next"] {
+    background: transparent;
+    border: 1.5px solid var(--ca-line-strong);
+  }
+
+  .ca-stage__status {
+    font-size: var(--ca-t-eyebrow);
+    font-weight: 600;
+    letter-spacing: var(--ca-track-eyebrow);
+    text-transform: uppercase;
+    color: var(--ca-fg-muted);
+  }
+
+  .ca-stage[data-state="live"] .ca-stage__status {
+    color: var(--ca-green-vivid);
+  }
+
+  .ca-stage__city {
+    display: flex;
+    align-items: center;
+    gap: 0.625rem;
+    font-size: var(--ca-t-h3);
+    font-weight: 600;
+    letter-spacing: var(--ca-track-h3);
+    color: var(--ca-fg);
+  }
+
+  .ca-stage__out {
+    opacity: 0.45;
+    transition:
+      opacity var(--ca-fast) var(--ca-ease),
+      transform var(--ca-fast) var(--ca-ease);
+  }
+
+  a.ca-stage__link:hover .ca-stage__out {
+    opacity: 1;
+    transform: translate(2px, -2px);
+  }
+
+  /* --- The city field ----------------------------------------------------- */
+
+  .ca-cityfield {
+    margin-top: clamp(3.5rem, 6vw, 5.5rem);
+    padding-top: clamp(2.5rem, 4vw, 3.5rem);
+    border-top: 1px solid var(--ca-line);
+  }
+
+  .ca-cityfield__label {
+    margin: 0;
+    font-size: var(--ca-t-eyebrow);
+    font-weight: 600;
+    letter-spacing: var(--ca-track-eyebrow);
+    text-transform: uppercase;
+    color: var(--ca-fg-muted);
+  }
+
+  .ca-cityfield__major {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.1em 0.55em;
+    margin: clamp(1.25rem, 2vw, 1.75rem) 0 0;
+    font-size: clamp(1.875rem, 4.6vw, 3.5rem);
+    font-weight: 600;
+    line-height: 1.14;
+    letter-spacing: var(--ca-track-h2);
+    color: var(--ca-fg);
+  }
+
+  .ca-cityfield__minor {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem 1rem;
+    margin: clamp(1.5rem, 2.4vw, 2rem) 0 0;
+    font-size: clamp(0.9375rem, 1.1vw, 1.0625rem);
+    color: var(--ca-fg-muted);
+  }
+
+  .ca-city--more {
+    color: var(--ca-accent);
+  }
+
+  /* The four capitals arrive slowly and at size; the long tail flickers in
+     behind them. Duration is per tier, delay is per item (set inline). */
+  .ca-city {
+    display: inline-block;
+    transition:
+      opacity var(--ca-dur) var(--ca-ease) var(--ca-delay, 0ms),
+      filter var(--ca-dur) var(--ca-ease) var(--ca-delay, 0ms),
+      transform var(--ca-dur) var(--ca-ease) var(--ca-delay, 0ms);
+  }
+
+  .ca-city[data-tier="major"] {
+    --ca-dur: 1500ms;
+  }
+
+  .ca-city[data-tier="minor"] {
+    --ca-dur: 480ms;
+  }
+
+  .ca-cityfield[data-revealed="false"] .ca-city {
+    opacity: 0;
+    filter: blur(12px);
+    transform: translateY(10px);
+  }
+
+  /* Never let an observer-gated reveal be the reason text cannot be read. */
+  @media (prefers-reduced-motion: reduce) {
+    .ca-cityfield[data-revealed="false"] .ca-city {
+      opacity: 1;
+      filter: none;
+      transform: none;
+    }
+
+    .ca-stage__dot[data-state="live"] {
+      animation: none;
+    }
+  }
+
+  /* --- Stats -------------------------------------------------------------- */
+
+  /* 0.62 looked right and measured 3.2:1 against the raised plane — under AA
+     for 13px text. 0.85 keeps it clearly secondary at 5.1:1. */
+  .ca-stat__note {
+    display: block;
+    margin-top: 0.375rem;
+    font-size: 0.8125rem;
+    color: var(--ca-fg-muted);
+    opacity: 0.85;
+  }
+
+  /* ==========================================================================
+     16. Numerals
+     ==========================================================================
+     Numbers are part of the visual language, so they get their own entrance:
+     out of focus and slightly low, then snapping sharp. Fast — 620ms — because
+     a number that takes its time reads as a loading state. */
+
+  .ca-num {
+    display: block;
+    font-variant-numeric: tabular-nums;
+    font-feature-settings: "tnum";
+    transition:
+      opacity 620ms var(--ca-ease) var(--ca-delay, 0ms),
+      filter 620ms var(--ca-ease) var(--ca-delay, 0ms),
+      transform 620ms var(--ca-ease) var(--ca-delay, 0ms);
+  }
+
+  [data-revealed="false"] .ca-num {
+    opacity: 0;
+    filter: blur(10px);
+    transform: translateY(0.18em);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    [data-revealed="false"] .ca-num {
+      opacity: 1;
+      filter: none;
+      transform: none;
+    }
+  }
+
+  /* ==========================================================================
+     17. Cursor
+     ==========================================================================
+     Only mounted for fine pointers, so everything here is desktop-only by
+     construction. Three layers track the pointer — a soft green wash that may
+     only fall on empty paper, a ring that trails a beat behind the pointer,
+     and a dot that tracks it exactly. Each is painted on its own compositor
+     layer and moved with transforms; they never trigger layout. */
+
+  .ca-glow,
+  .ca-cursor {
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 70;
+    pointer-events: none;
+    will-change: transform;
+  }
+
+  /* The ambient light. Kept small and blended with multiply so it reads as
+     light falling on the paper rather than a shape painted over the page; the
+     pointer's own handler switches it off over anything carrying content — the
+     film, imagery, the cards, text fields and the dark sections. */
+  .ca-glow {
+    width: 34rem;
+    height: 34rem;
+    border-radius: 50%;
+    opacity: 0;
+    background: radial-gradient(
+      circle closest-side,
+      rgba(37, 211, 102, 0.17),
+      rgba(0, 229, 160, 0.07) 45%,
+      transparent 70%
+    );
+    mix-blend-mode: multiply;
+    transition: opacity 400ms var(--ca-ease);
+  }
+
+  :root[data-ca-cursor="on"] .ca-glow[data-visible="on"] {
+    opacity: 0.9;
+  }
+
+  :root[data-ca-cursor-out] .ca-glow,
+  :root[data-ca-cursor-out] .ca-cursor {
+    opacity: 0;
+  }
+
+  /* --- The pointer -------------------------------------------------------- */
+
+  .ca-cursor {
+    width: 0;
+    height: 0;
+    z-index: 90;
+    opacity: 0;
+    transition: opacity 200ms var(--ca-ease);
+  }
+
+  :root[data-ca-cursor="on"] .ca-cursor {
+    opacity: 1;
+  }
+
+  .ca-cursor__dot,
+  .ca-cursor__ring {
+    position: absolute;
+    top: 0;
+    left: 0;
+    border-radius: 50%;
+    transition:
+      width 220ms var(--ca-ease),
+      height 220ms var(--ca-ease),
+      opacity 220ms var(--ca-ease),
+      background-color 220ms var(--ca-ease),
+      border-color 220ms var(--ca-ease),
+      box-shadow 220ms var(--ca-ease);
+  }
+
+  /* The exact focus point: a solid green bead with a paper-coloured halo so
+     it reads against film and paper alike. */
+  .ca-cursor__dot {
+    width: 9px;
+    height: 9px;
+    background: var(--ca-green-vivid);
+    box-shadow:
+      0 0 0 2px var(--ca-bg),
+      0 0 0 3px rgba(46, 232, 111, 0.4),
+      0 3px 12px rgba(37, 211, 102, 0.5);
+  }
+
+  /* The ring lags behind the dot (its position is eased in the handler) and
+     carries the affordance: thick enough to feel, faint enough to defer. */
+  .ca-cursor__ring {
+    width: 32px;
+    height: 32px;
+    border: 2px solid rgba(46, 232, 111, 0.7);
+    background: rgba(46, 232, 111, 0.06);
+  }
+
+  /* Over something clickable the ring opens wide, fills softly and throws a
+     green light — the whole state change, deliberately. */
+  .ca-cursor[data-state="active"] .ca-cursor__ring {
+    width: 52px;
+    height: 52px;
+    border-color: rgba(46, 232, 111, 0.9);
+    background: rgba(46, 232, 111, 0.14);
+    box-shadow: 0 6px 24px rgba(37, 211, 102, 0.35);
+  }
+
+  .ca-cursor[data-state="active"] .ca-cursor__dot {
+    width: 6px;
+    height: 6px;
+    box-shadow: 0 0 0 2px var(--ca-bg);
+  }
+
+  /* Over a text field the custom pointer gets out of the way entirely so the
+     native caret is the only thing the eye has to follow. */
+  .ca-cursor[data-state="text"] {
+    opacity: 0;
+  }
+
+  /* Hide the system cursor only once ours is confirmed running, and never over
+     inputs, where the I-beam carries real meaning. */
+  :root[data-ca-cursor="on"] .ca,
+  :root[data-ca-cursor="on"] .ca a,
+  :root[data-ca-cursor="on"] .ca button {
+    cursor: none;
+  }
+
+  :root[data-ca-cursor="on"] .ca input,
+  :root[data-ca-cursor="on"] .ca textarea,
+  :root[data-ca-cursor="on"] .ca select {
+    cursor: auto;
+  }
+
+  /* ==========================================================================
+     18. Feature rail
+     ==========================================================================
+     Default (and the whole story on touch): a native horizontal scroller with
+     snap points. The desktop hijack is layered on top inside a media query, so
+     a phone never even parses the pinned version. */
+
+  .ca-rail__viewport {
+    margin-top: clamp(2.5rem, 4vw, 3.5rem);
+  }
+
+  .ca-rail {
+    display: flex;
+    gap: clamp(1rem, 1.6vw, 1.5rem);
+    padding-inline: var(--ca-gutter);
+    padding-block: 0.5rem;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    scrollbar-width: none;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .ca-rail::-webkit-scrollbar {
+    display: none;
+  }
+
+  .ca-card {
+    flex: 0 0 min(82vw, 380px);
+    scroll-snap-align: center;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    border: 1px solid var(--ca-line);
+    border-radius: var(--ca-r-lg);
+    background: var(--ca-bg);
+    box-shadow: var(--ca-shadow-soft);
+    transition:
+      transform 600ms var(--ca-ease),
+      opacity 600ms var(--ca-ease),
+      filter 600ms var(--ca-ease);
+  }
+
+  .ca-card__media {
+    position: relative;
+    aspect-ratio: 4 / 3;
+    overflow: hidden;
+    background: var(--ca-surface);
+  }
+
+  .ca-card__media img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+    transition: transform 900ms var(--ca-ease);
+  }
+
+  .ca-card__body {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    padding: clamp(1.25rem, 2vw, 1.75rem);
+  }
+
+  /* The card's numeral: large, light, and set in the accent so the sequence is
+     legible at a glance while scrolling past. */
+  .ca-card__num {
+    font-size: clamp(2rem, 2.6vw, 2.75rem);
+    font-weight: 600;
+    line-height: 1;
+    letter-spacing: -0.04em;
+    color: var(--ca-accent);
+  }
+
+  .ca-card__title {
+    margin-top: 0.125rem;
+  }
+
+  /* --- Desktop hijack ------------------------------------------------------ */
+
+  @media (min-width: 1000px) {
+    /* Height is written by the component from the rail's real width, so the
+       slide always ends exactly as the last card lands. */
+    .ca-jack[data-jacked="true"] {
+      height: var(--ca-jack-h, 300vh);
+      padding-block: 0;
+    }
+
+    .ca-jack[data-jacked="true"] .ca-jack__stage {
+      position: sticky;
+      top: 0;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      gap: clamp(1.5rem, 3vh, 2.5rem);
+      overflow: hidden;
+    }
+
+    .ca-jack[data-jacked="true"] .ca-rail {
+      overflow: visible;
+      scroll-snap-type: none;
+      /* Symmetric edge padding sized so the first card starts centred in the
+         viewport and the last card can reach centre before the travel ends —
+         without it neither ever becomes the focused card. */
+      padding-inline: max(var(--ca-gutter), calc((100vw - 380px) / 2));
+      transform: translate3d(var(--ca-x, 0), 0, 0);
+      will-change: transform;
+    }
+
+    .ca-jack[data-jacked="true"] .ca-card {
+      flex-basis: 380px;
+      /* Everything that is not the focused card falls back a step: smaller,
+         quieter, and very slightly out of focus. */
+      transform: scale(0.94);
+      opacity: 0.5;
+      filter: blur(2px);
+    }
+
+    .ca-jack[data-jacked="true"] .ca-card[data-active="true"] {
+      transform: scale(1);
+      opacity: 1;
+      filter: blur(0);
+    }
+
+    .ca-jack[data-jacked="true"] .ca-card[data-active="true"] .ca-card__media img {
+      transform: scale(1.04);
+    }
+  }
+
+  /* --- Progress readout ---------------------------------------------------- */
+
+  .ca-rail__progress {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+  }
+
+  .ca-rail__count {
+    font-size: var(--ca-t-small);
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+    color: var(--ca-fg);
+  }
+
+  .ca-rail__count i {
+    font-style: normal;
+    margin-inline: 0.3em;
+    color: var(--ca-fg-muted);
+  }
+
+  .ca-rail__track {
+    position: relative;
+    flex: 1;
+    height: 2px;
+    border-radius: 2px;
+    background: var(--ca-line-strong);
+    overflow: hidden;
+  }
+
+  .ca-rail__bar {
+    position: absolute;
+    inset: 0;
+    transform-origin: left center;
+    background-image: var(--ca-grad-1);
+    transition: transform 400ms var(--ca-ease);
+  }
+
+  /* ==========================================================================
+     19. City network
+     ========================================================================== */
+
+  .ca-net__field {
+    position: relative;
+    display: grid;
+    place-items: center;
+    min-height: min(78vh, 640px);
+    padding-block: clamp(2rem, 5vw, 4rem);
+  }
+
+  .ca-net__drift {
+    position: absolute;
+    inset: 0;
+    overflow: hidden;
+    pointer-events: none;
+  }
+
+  /* Each name drifts on its own clock. Transform-only, so twenty of them cost
+     the compositor almost nothing. */
+  .ca-net__city {
+    position: absolute;
+    left: var(--ca-nx);
+    top: var(--ca-ny);
+    white-space: nowrap;
+    font-weight: 500;
+    letter-spacing: -0.02em;
+    color: var(--ca-fg);
+    animation: ca-drift var(--ca-dur) ease-in-out var(--ca-delay) infinite alternate;
+  }
+
+  .ca-net__city[data-depth="0"] {
+    font-size: clamp(0.8125rem, 1vw, 0.9375rem);
+    opacity: 0.22;
+  }
+
+  .ca-net__city[data-depth="1"] {
+    font-size: clamp(1rem, 1.5vw, 1.375rem);
+    opacity: 0.34;
+  }
+
+  .ca-net__city[data-depth="2"] {
+    font-size: clamp(1.375rem, 2.4vw, 2.125rem);
+    opacity: 0.46;
+  }
+
+  @keyframes ca-drift {
+    from {
+      transform: translate3d(calc(var(--ca-swing) * -14px), -10px, 0);
+    }
+    to {
+      transform: translate3d(calc(var(--ca-swing) * 14px), 10px, 0);
+    }
+  }
+
+  /* The names fade up as the field arrives, staggered by their own delay. */
+  [data-revealed="false"] .ca-net__city {
+    opacity: 0;
+    filter: blur(8px);
+  }
+
+  .ca-net__city {
+    transition:
+      opacity 1200ms var(--ca-ease),
+      filter 1200ms var(--ca-ease);
+  }
+
+  .ca-net__core {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: clamp(1rem, 2vw, 1.5rem);
+    text-align: center;
+    /* A soft well in the middle so the statement always sits on quiet ground,
+       whatever drifts behind it. */
+    padding: clamp(1.5rem, 4vw, 3rem);
+  }
+
+  .ca-net__core::before {
+    content: "";
+    position: absolute;
+    inset: -10% -12%;
+    z-index: -1;
+    pointer-events: none;
+    background: radial-gradient(
+      ellipse at center,
+      rgba(7, 16, 12, 0.96) 0%,
+      rgba(7, 16, 12, 0.88) 42%,
+      rgba(7, 16, 12, 0) 74%
+    );
+  }
+
+  .ca-net__title {
+    max-width: 12em;
+  }
+
+  .ca-net__lead {
+    color: var(--ca-fg-soft);
+  }
+
+  /* The goal, stated in plain words under the live rail — the claim the whole
+     network exists to make. */
+  .ca-net__goal {
+    margin: clamp(2.5rem, 4vw, 3.5rem) auto 0;
+    max-width: 52rem;
+    text-align: center;
+  }
+
+  .ca-net__goal .ca-h3 {
+    font-weight: 500;
+    line-height: 1.42;
+  }
+
+  /* --- Live nodes ---------------------------------------------------------- */
+
+  .ca-net__live {
+    display: grid;
+    gap: 1px;
+    margin-top: clamp(2rem, 4vw, 3rem);
+    background: var(--ca-line);
+    border: 1px solid var(--ca-line);
+    border-radius: var(--ca-r-lg);
+    overflow: hidden;
+  }
+
+  @media (min-width: 860px) {
+    .ca-net__live {
+      grid-template-columns: repeat(3, 1fr);
+    }
+  }
+
+  .ca-node {
+    display: flex;
+    align-items: center;
+    gap: 0.875rem;
+    padding: clamp(1.25rem, 2.2vw, 1.75rem);
+    background: var(--ca-bg);
+    color: inherit;
+    text-decoration: none;
+    transition: background-color var(--ca-fast) var(--ca-ease);
+  }
+
+  a.ca-node:hover {
+    background: rgba(255, 255, 255, 0.04);
+  }
+
+  .ca-node__body {
+    display: flex;
+    flex-direction: column;
+    gap: 0.3rem;
+    min-width: 0;
+  }
+
+  .ca-node__status {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: var(--ca-t-eyebrow);
+    font-weight: 600;
+    letter-spacing: var(--ca-track-eyebrow);
+    text-transform: uppercase;
+    color: var(--ca-fg-muted);
+  }
+
+  .ca-node--live .ca-node__status {
+    color: var(--ca-green-vivid);
+  }
+
+  .ca-node__dot {
+    width: 7px;
+    height: 7px;
+    flex: none;
+    border-radius: 50%;
+    background: var(--ca-green-vivid);
+    animation: ca-pulse 2.6s var(--ca-ease) infinite;
+  }
+
+  .ca-node__dot[data-state="building"] {
+    background: var(--ca-green-lime);
+    animation: none;
+  }
+
+  .ca-node__dot[data-state="next"] {
+    background: transparent;
+    border: 1.5px solid var(--ca-line-strong);
+    animation: none;
+  }
+
+  .ca-node__city {
+    display: flex;
+    align-items: center;
+    gap: 0.45rem;
+    font-size: var(--ca-t-h3);
+    font-weight: 600;
+    letter-spacing: var(--ca-track-h3);
+    color: var(--ca-fg);
+  }
+
+  a.ca-node:hover .ca-node__city svg {
+    transform: translate(2px, -2px);
+  }
+
+  .ca-node__city svg {
+    opacity: 0.5;
+    transition: transform var(--ca-fast) var(--ca-ease);
+  }
+
+  .ca-node__cta {
+    align-self: flex-start;
+    margin-top: 0.25rem;
+    font-size: 0.9375rem;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .ca-net__city,
+    .ca-node__dot {
+      animation: none !important;
+    }
+  }
+
+  /* ==========================================================================
+     20. Video panels
+     ========================================================================== */
+
+  .ca-video {
+    position: relative;
+    overflow: hidden;
+    border-radius: var(--ca-r-xl);
+    background: var(--ca-surface);
+    box-shadow: var(--ca-shadow-soft);
+    line-height: 0;
+  }
+
+  .ca-video video {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+
+  /* A hairline of light along the top edge, the same trick the navigation uses,
+     so the panel reads as a solid object rather than a hole in the page. */
+  .ca-video::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    pointer-events: none;
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.14),
+      inset 0 0 0 1px rgba(7, 16, 12, 0.06);
+  }
+
+  .ca-eco__film {
+    margin-top: clamp(3rem, 5vw, 4.5rem);
+    aspect-ratio: 16 / 9;
+  }
+
+  /* ==========================================================================
+     21. Business
+     ========================================================================== */
+
+  .ca-biz {
+    display: grid;
+    gap: clamp(2rem, 4vw, 4rem);
+    align-items: center;
+  }
+
+  @media (min-width: 960px) {
+    .ca-biz {
+      grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
+    }
+  }
+
+  .ca-biz__media {
+    aspect-ratio: 4 / 5;
+  }
+
+  @media (max-width: 959px) {
+    .ca-biz__media {
+      aspect-ratio: 16 / 10;
+    }
+  }
+
+  .ca-biz__copy {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: clamp(1rem, 1.8vw, 1.5rem);
+  }
+
+  .ca-biz__title {
+    max-width: 14em;
+  }
+
+  .ca-points {
+    display: grid;
+    gap: clamp(1.25rem, 2vw, 1.75rem);
+    margin: clamp(0.5rem, 1vw, 1rem) 0 0.5rem;
+    padding: 0;
+    list-style: none;
+  }
+
+  .ca-point {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    gap: 1rem;
+    align-items: start;
+    padding-top: 1.25rem;
+    border-top: 1px solid var(--ca-line);
+  }
+
+  .ca-point__num {
+    font-size: 1rem;
+    font-weight: 600;
+    line-height: 1.4;
+    color: var(--ca-accent);
+  }
+
+  /* ==========================================================================
+     22. Bring / contact
+     ========================================================================== */
+
+  .ca-bring {
+    display: grid;
+    gap: clamp(2.5rem, 5vw, 4.5rem);
+  }
+
+  @media (min-width: 960px) {
+    .ca-bring {
+      grid-template-columns: minmax(0, 1fr) minmax(0, 1.05fr);
+      align-items: start;
+    }
+  }
+
+  .ca-bring__intro {
+    display: flex;
+    flex-direction: column;
+    gap: clamp(1rem, 2vw, 1.5rem);
+    align-items: flex-start;
+  }
+
+  .ca-form {
+    display: grid;
+    gap: clamp(1.5rem, 2.4vw, 2rem);
+  }
+
+  .ca-form__row {
+    display: grid;
+    gap: clamp(1.5rem, 2.4vw, 2rem);
+  }
+
+  @media (min-width: 560px) {
+    .ca-form__row {
+      grid-template-columns: 1fr 1fr;
+    }
+  }
+
+  /* Underlined fields on open ground — no boxes, which is the difference
+     between a section and a corporate form. */
+  .ca-field {
+    display: grid;
+    gap: 0.5rem;
+  }
+
+  .ca-field label {
+    font-size: var(--ca-t-small);
+    font-weight: 600;
+    color: var(--ca-fg);
+  }
+
+  .ca-field input,
+  .ca-field textarea {
+    width: 100%;
+    padding: 0.625rem 0 0.75rem;
+    border: 0;
+    border-bottom: 1px solid var(--ca-line-strong);
+    border-radius: 0;
+    background: transparent;
+    font: inherit;
+    font-size: 1.0625rem;
+    color: var(--ca-fg);
+    resize: vertical;
+    transition: border-color var(--ca-fast) var(--ca-ease);
+  }
+
+  .ca-field input::placeholder,
+  .ca-field textarea::placeholder {
+    color: var(--ca-fg-muted);
+    opacity: 0.75;
+  }
+
+  .ca-field input:focus,
+  .ca-field textarea:focus {
+    outline: none;
+    border-bottom-color: var(--ca-green);
+  }
+
+  .ca-field input:focus-visible,
+  .ca-field textarea:focus-visible {
+    outline: none;
+  }
+
+  .ca-form__foot {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 1rem;
+  }
+
+  .ca-form__error {
+    color: #b3261e;
+  }
+
+  .ca-bring__done {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.875rem;
+    padding: clamp(1.75rem, 3vw, 2.5rem);
+    border: 1px solid var(--ca-line);
+    border-radius: var(--ca-r-lg);
+    background: color-mix(in srgb, var(--ca-green) 6%, var(--ca-bg));
+  }
+
+  .ca-bring__tick {
+    display: grid;
+    place-items: center;
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    background-image: var(--ca-grad-1);
+    color: var(--ca-ink);
+  }
+
+  /* ==========================================================================
+     23. Footer
+     ========================================================================== */
+
+  .ca-foot {
+    position: relative;
+    overflow: hidden;
+    padding-bottom: clamp(9rem, 20vw, 17rem);
+  }
+
+  .ca-foot__inner {
+    position: relative;
+    z-index: 1;
+  }
+
+  .ca-foot__top {
+    display: grid;
+    gap: clamp(2.5rem, 5vw, 4rem);
+  }
+
+  @media (min-width: 900px) {
+    .ca-foot__top {
+      grid-template-columns: minmax(0, 1fr) minmax(0, 1.7fr);
+    }
+  }
+
+  .ca-foot__brand {
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+    align-items: flex-start;
+  }
+
+  .ca-foot__cols {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: clamp(2rem, 3.5vw, 2.5rem);
+  }
+
+  @media (min-width: 720px) {
+    .ca-foot__cols {
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+    }
+  }
+
+  /* The closing image: the name at architectural scale, cropped by the viewport
+     on both sides. Decorative only — it is hidden from assistive tech and
+     carries no information the footer above does not already state. */
+  .ca-foot__giant {
+    position: absolute;
+    left: 50%;
+    bottom: clamp(-2.5rem, -3vw, -1rem);
+    transform: translateX(-50%);
+    width: 130%;
+    text-align: center;
+    pointer-events: none;
+    user-select: none;
+    line-height: 0.78;
+  }
+
+  .ca-foot__giant span {
+    display: block;
+    font-size: clamp(6rem, 21vw, 21rem);
+    font-weight: 800;
+    letter-spacing: -0.05em;
+    white-space: nowrap;
+    color: transparent;
+    background-image: linear-gradient(
+      180deg,
+      rgba(255, 255, 255, 0.09) 0%,
+      rgba(255, 255, 255, 0.02) 70%,
+      rgba(255, 255, 255, 0) 100%
+    );
+    -webkit-background-clip: text;
+    background-clip: text;
+  }
+
+  /* ==========================================================================
+     23. Vision, opportunity, team
+     ==========================================================================
+     The company sections that carry the pitch beyond the product: a dark
+     statement of belief, the market laid on the same plane as the platform
+     grid, and the people behind it. */
+
+  /* --- Vision ----------------------------------------------------------- */
+
+  .ca-vision {
+    gap: clamp(1.5rem, 3vh, 2.5rem);
+    margin-inline: auto;
+  }
+
+  .ca-vision__title {
+    font-size: clamp(2.25rem, 5.5vw, 4.25rem);
+    letter-spacing: var(--ca-track-display);
+  }
+
+  /* The second line, set in the editorial face with the brand gradient — the
+     same pairing as the hero's rotating words, here standing still. */
+  .ca-vision__accent {
+    font-family: var(--ca-font-editorial);
+    font-style: italic;
+    font-weight: 400;
+    font-size: 1.06em;
+    line-height: 1.1;
+    letter-spacing: -0.012em;
+    background-image: var(--ca-grad-1);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    padding-block: 0.06em;
+  }
+
+  /* --- Opportunity ------------------------------------------------------- */
+
+  .ca-opportunity__grid {
+    margin-top: clamp(3rem, 5vw, 4.5rem);
+  }
+
+  /* Three market cells fill a row, and the model statement closes the plane
+     as a full-width green band — a deliberate change of weight rather than a
+     leftover cell. Content stays left-aligned but settles at the vertical
+     centre, so the band reads as one balanced panel rather than a scatter. */
+  .ca-opportunity__grid .ca-cell--accent {
+    grid-column: 1 / -1;
+    justify-content: center;
+  }
+
+  /* --- Team -------------------------------------------------------------- */
+
+  .ca-team {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: clamp(1rem, 1.6vw, 1.5rem);
+    margin-top: clamp(3rem, 5vw, 4.5rem);
+  }
+
+  @media (min-width: 640px) {
+    .ca-team {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+
+  .ca-team__card {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.375rem;
+    padding: clamp(1.5rem, 2.4vw, 2.125rem);
+    border: 1px solid var(--ca-line);
+    border-radius: var(--ca-r-lg);
+    background: var(--ca-surface);
+    box-shadow: var(--ca-shadow-soft);
+  }
+
+  .ca-team__avatar {
+    display: grid;
+    place-items: center;
+    width: 3.5rem;
+    height: 3.5rem;
+    margin-bottom: 0.875rem;
+    border-radius: 50%;
+    font-size: var(--ca-t-small);
+    font-weight: 700;
+    letter-spacing: 0.02em;
+    color: var(--ca-bg);
+    background-image: var(--ca-grad-1);
+  }
+
+  .ca-team__name {
+    margin-top: 0.25rem;
+  }
+
+  .ca-team__role {
+    color: var(--ca-accent);
+    font-weight: 600;
+  }
+
+  .ca-team__bio {
+    margin-top: 0.75rem;
+  }
+}

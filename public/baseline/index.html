@@ -1,0 +1,1580 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Baseline — Tennis Club &amp; Academy</title>
+<meta name="description" content="Baseline is a members' tennis club and academy where focused coaching meets championship courts.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Onest:wght@400;500&display=swap">
+<script type="importmap">
+{ "imports": { "lenis": "https://cdn.jsdelivr.net/npm/lenis@1.1.18/+esm" } }
+</script>
+<style>
+/* ============================================================= tokens */
+:root{
+  --background:#ffffff;
+  --foreground:#0a0a0a;
+  --brand:#2563c9;
+  --brand-deep:#0f2f63;
+  --brand-light:#5790e6;
+  --accent-teal:#0b6e97;
+  --surface:#f4f4f4;
+  --surface-card:#ffffff;
+  --ink:#0a0a0a;
+  --ink-soft:#717784;
+  --ghost:#d7dae1;
+  --hairline:#e6e8ec;
+  --on-brand:#ffffff;
+
+  --radius-card:1.5rem;
+  --radius-card-lg:2rem;
+  --radius-pill:62.5rem;
+  --radius-xl:.75rem;
+
+  --ease-out-expo:cubic-bezier(.16,1,.3,1);
+  --ease-out-quart:cubic-bezier(.25,1,.5,1);
+  --ease-in-out-cubic:cubic-bezier(.65,0,.35,1);
+
+  --glass-shadow:0 1.25rem 2.5rem rgba(15,47,99,.2);
+}
+
+/* ============================================================= reset */
+*,*::before,*::after{box-sizing:border-box}
+*{margin:0}
+html{font-size:16px;-webkit-text-size-adjust:100%;scroll-behavior:auto}
+/* adaptive rem grid: 16 * 100 / baseWidth = vw */
+@media (max-width:1920px){html{font-size:.833333vw}}  /* base 1920 */
+@media (max-width:1440px){html{font-size:1.111111vw}} /* base 1440 */
+@media (max-width:1024px){html{font-size:1.5625vw}}   /* base 1024 */
+@media (max-width:640px){html{font-size:4.444444vw}}  /* base  360 */
+
+body{
+  min-height:100vh;
+  background:var(--background);
+  color:var(--foreground);
+  font-family:"Onest",system-ui,sans-serif;
+  font-weight:400;
+  -webkit-font-smoothing:antialiased;
+  text-rendering:optimizeLegibility;
+}
+img,svg,video{display:block;max-width:100%}
+button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
+a{color:inherit;text-decoration:none}
+ul,ol{list-style:none;padding:0}
+input,textarea,select{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--brand-light);outline-offset:2px}
+.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+
+/* lenis */
+html.lenis,html.lenis body{height:auto}
+.lenis.lenis-smooth{scroll-behavior:auto !important}
+.lenis.lenis-smooth [data-lenis-prevent]{overscroll-behavior:contain}
+.lenis.lenis-stopped{overflow:hidden}
+/* hard scroll lock (loader / menu / modal) */
+html.is-locked{position:relative;overflow:hidden;height:100%}
+
+/* ============================================================= reveal primitives */
+.clip{display:inline-block;overflow:hidden;padding-bottom:.12em}
+.clip>span{display:inline-block;transform:translateY(115%);opacity:0;will-change:transform,opacity}
+.clip.in>span{transform:translateY(0);opacity:1}
+
+.clipline{display:block;overflow:hidden;padding-bottom:.14em}
+.clipline>span{display:block;transform:translateY(115%);opacity:0;will-change:transform,opacity}
+.clipline.in>span{transform:translateY(0);opacity:1}
+
+.wfade{display:inline-block;transform:translateY(18px);opacity:0;will-change:transform,opacity}
+.wfade.in{transform:translateY(0);opacity:1}
+
+/* ============================================================= shared ui */
+.eyebrow{display:inline-flex;align-items:center;gap:.5rem;font-size:.75rem;font-weight:500;text-transform:uppercase;letter-spacing:.22em}
+.eyebrow::before{content:"";display:block;width:.375rem;height:.375rem;border-radius:var(--radius-pill);background:var(--brand);flex:none}
+.eyebrow.dark{color:var(--ink-soft)}
+.eyebrow.light{color:rgba(255,255,255,.7)}
+.eyebrow.light::before{background:var(--brand-light)}
+
+.pill{
+  display:inline-flex;align-items:center;gap:.5rem;
+  border-radius:var(--radius-pill);
+  padding:.875rem 1.75rem;
+  font-size:.875rem;font-weight:500;text-transform:uppercase;letter-spacing:.05em;
+  border:1px solid transparent;
+  transition:background-color .35s ease,color .35s ease,border-color .35s ease;
+}
+.pill svg{width:1rem;height:1rem;flex:none;will-change:transform}
+.pill.light{background:#fff;color:var(--brand-deep)}
+.pill.light:hover{background:var(--brand-light);color:#fff}
+.pill.solid{background:var(--ink);color:#fff}
+.pill.solid:hover{background:var(--brand-deep)}
+.pill.outline{border-color:currentColor;color:var(--ink)}
+.pill.outline:hover{background:var(--ink);color:#fff}
+.pill[disabled]{opacity:.6;cursor:default}
+
+.abtn{
+  display:grid;place-items:center;
+  width:3rem;height:3rem;flex:none;
+  border-radius:var(--radius-pill);
+  border:1px solid transparent;
+  transition:background-color .35s ease,border-color .35s ease,color .35s ease;
+}
+@media (min-width:640px){.abtn{width:3.5rem;height:3.5rem}}
+.abtn svg{width:1.25rem;height:1.25rem;will-change:transform}
+.abtn.outline{border-color:var(--hairline);color:var(--ink)}
+.abtn.outline:hover{border-color:var(--ink)}
+.abtn.solid{background:var(--ink);border-color:var(--ink);color:#fff}
+.abtn.solid:hover{background:var(--brand-deep);border-color:var(--brand-deep)}
+
+.dots{display:flex;align-items:center;gap:.5rem}
+.dots button{display:block;padding:.375rem;line-height:0}
+.dots i{display:block;height:.375rem;width:.375rem;border-radius:var(--radius-pill);transition:width .4s var(--ease-out-expo),background-color .4s ease}
+.dots.dark i{background:var(--ghost)}
+.dots.dark button[aria-current="true"] i{width:1.25rem;background:var(--ink)}
+.dots.light i{background:rgba(255,255,255,.4)}
+.dots.light button[aria-current="true"] i{width:1.25rem;background:#fff}
+
+.brandmark{display:inline-flex;align-items:center;gap:.5rem;font-weight:500;text-transform:uppercase;letter-spacing:.2em}
+
+/* ============================================================= page shell */
+main{width:100%;overflow-x:clip;padding:.5rem}
+@media (min-width:640px){main{padding:.75rem}}
+
+/* ============================================================= header */
+.site-header{
+  position:relative;z-index:20;
+  display:flex;align-items:center;gap:1rem;
+  padding:1.5rem 1.5rem 0;
+  font-size:.75rem;color:#fff;
+}
+@media (min-width:640px){.site-header{padding:2rem 2.5rem 0}}
+.hdr-left{display:none;flex:1;align-items:center;gap:2rem}
+@media (min-width:1024px){.hdr-left{display:flex}}
+.hdr-left a{color:rgba(255,255,255,.9);transition:color .3s ease}
+.hdr-left a:hover{color:#fff}
+.hdr-center{flex:1;display:flex;justify-content:flex-start}
+@media (min-width:1024px){.hdr-center{justify-content:center}}
+.hdr-center .brandmark{font-size:1rem}
+.hdr-center .brandmark svg{width:1.25rem;height:1.25rem}
+.hdr-right{flex:1;display:flex;align-items:center;justify-content:flex-end;gap:1rem}
+@media (min-width:640px){.hdr-right{gap:1.25rem}}
+.hdr-book{display:none;text-transform:uppercase;letter-spacing:.05em;font-size:.75rem}
+@media (min-width:640px){.hdr-book{display:inline-block}}
+.hdr-book:hover{text-decoration:underline;text-underline-offset:.25rem}
+.burger{
+  display:grid;place-items:center;gap:5px;
+  width:2.5rem;height:2.5rem;flex:none;
+  border-radius:var(--radius-pill);
+  background:rgba(255,255,255,.15);
+  -webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);
+  transition:background-color .3s ease;
+}
+.burger:hover{background:rgba(255,255,255,.25)}
+.burger span{display:block;width:1rem;height:1px;background:#fff}
+
+/* ============================================================= hero */
+.hero{
+  position:relative;isolation:isolate;overflow:hidden;
+  display:flex;flex-direction:column;
+  background:var(--brand-deep);color:var(--on-brand);
+  border-radius:var(--radius-card-lg);
+  height:calc(100svh - 1rem);min-height:36rem;
+}
+@media (min-width:640px){.hero{height:calc(100svh - 1.5rem)}}
+.hero-bg{position:absolute;inset:0;z-index:-10;overflow:hidden}
+.hero-plate{position:absolute;left:0;right:0;top:-16%;height:132%;width:100%;will-change:transform}
+.hero-plate img{width:100%;height:100%;object-fit:cover}
+.hero-grad{position:absolute;inset:0;background:linear-gradient(to bottom,rgba(15,47,99,.65),rgba(15,47,99,.35),rgba(15,47,99,.75))}
+
+.hero-title-wrap{padding:1rem 1.5rem 0}
+@media (min-width:640px){.hero-title-wrap{padding-left:2.5rem;padding-right:2.5rem}}
+.hero-title{
+  font-size:12.5vw;font-weight:500;text-transform:uppercase;
+  line-height:.85;letter-spacing:-.02em;white-space:nowrap;
+}
+
+.hero-bottom{margin-top:auto;display:flex;flex-direction:column;gap:1.5rem;padding:0 1.5rem 2rem}
+@media (min-width:640px){.hero-bottom{flex-direction:row;justify-content:space-between;align-items:flex-end;padding:0 2.5rem 2.5rem}}
+.hero-tagline{
+  font-size:2.4rem;font-weight:500;text-transform:uppercase;
+  line-height:.95;letter-spacing:-.02em;color:rgba(255,255,255,.85);
+}
+.hero-right{display:flex;align-items:flex-end;gap:1rem}
+
+.collection{display:none}
+@media (min-width:768px){.collection{display:flex;flex-direction:column;gap:.75rem;width:16rem}}
+.coll-stack{position:relative}
+.coll-card{
+  display:flex;gap:.75rem;align-items:center;
+  border-radius:var(--radius-card);
+  border:1px solid rgba(255,255,255,.15);
+  background:rgba(255,255,255,.1);
+  padding:.75rem;
+  box-shadow:var(--glass-shadow);
+  -webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px);
+  will-change:transform,opacity;
+}
+.coll-card.is-out{position:absolute;inset:0;pointer-events:none}
+.coll-card img{width:3.5rem;height:3.5rem;flex:none;border-radius:var(--radius-xl);object-fit:cover}
+.coll-brand{font-size:.7rem;font-weight:500;text-transform:uppercase;letter-spacing:.05em}
+.coll-title{font-size:.7rem;text-transform:uppercase;opacity:.8;margin-top:.125rem}
+.coll-cta{display:inline-block;font-size:.65rem;margin-top:.5rem;text-decoration:underline;text-underline-offset:.2rem}
+
+.member-card{
+  display:flex;align-items:stretch;gap:.75rem;
+  width:100%;max-width:20rem;
+  border-radius:var(--radius-card);
+  border:1px solid rgba(255,255,255,.15);
+  background:rgba(255,255,255,.1);
+  padding:.75rem;
+  box-shadow:var(--glass-shadow);
+  -webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px);
+  will-change:transform,opacity;
+}
+@media (min-width:640px){.member-card{max-width:15rem}}
+.mc-left{display:flex;flex-direction:column;justify-content:space-between;flex:1;min-width:0;gap:.5rem}
+.mc-value{font-size:1.875rem;font-weight:500;line-height:1}
+.mc-dots{display:flex}
+.mc-dots span{display:block;width:1.25rem;height:1.25rem;border-radius:var(--radius-pill);border:1px solid rgba(15,47,99,.4)}
+.mc-dots span+span{margin-left:-.5rem}
+.mc-cap{font-size:.65rem;opacity:.8}
+.mc-img{width:4rem;flex:none;aspect-ratio:3/4;border-radius:var(--radius-xl);object-fit:cover}
+
+/* ============================================================= trust */
+.trust{
+  position:relative;isolation:isolate;overflow:hidden;
+  background:var(--background);
+  padding:4rem 1.5rem;
+}
+@media (min-width:640px){.trust{padding:5rem 2.5rem}}
+.trust-top{position:relative;z-index:20;display:flex;flex-direction:column;gap:2rem}
+@media (min-width:640px){.trust-top{flex-direction:row;justify-content:space-between;align-items:flex-start}}
+.pct-badge{
+  display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;
+  width:7rem;height:7rem;flex:none;padding:.5rem;
+  border-radius:var(--radius-pill);background:var(--surface);
+  will-change:transform,opacity;
+}
+@media (min-width:640px){.pct-badge{width:8rem;height:8rem}}
+.pct-badge .v{font-size:1.5rem;font-weight:500;line-height:1}
+.pct-badge .c{font-size:.6rem;line-height:1.3;color:var(--ink-soft);max-width:7em;margin-top:.375rem}
+.badge-card{
+  display:flex;gap:1rem;max-width:28rem;
+  border-radius:var(--radius-card);background:var(--surface);padding:1.25rem;
+  will-change:transform,opacity;
+}
+@media (min-width:640px){.badge-card{gap:1.25rem;padding:1.5rem}}
+.badge-chip{align-self:flex-start;border-radius:var(--radius-xl);background:var(--background);padding:.5rem 1rem;font-size:1.25rem;font-weight:500;line-height:1}
+.badge-card h3{font-size:1.125rem;font-weight:500}
+.badge-card p{font-size:.75rem;line-height:1.625;color:var(--ink-soft);margin-top:.5rem}
+
+.ghost-title{
+  position:relative;z-index:0;pointer-events:none;user-select:none;-webkit-user-select:none;
+  max-width:88rem;margin:3rem auto 0;
+  font-size:8.2vw;font-weight:500;text-transform:uppercase;
+  line-height:1.02;letter-spacing:-.02em;color:var(--ghost);
+}
+.ghost-row{display:flex;justify-content:space-between;align-items:baseline}
+.gw{display:inline-block;will-change:transform}
+.gw.ink{color:var(--ink)}
+.gw .clip{padding-bottom:.12em}
+
+.coach-slot{position:relative;z-index:10;display:flex;justify-content:center;margin-top:2rem}
+@media (min-width:640px){.coach-slot{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);margin-top:0}}
+.coach-anim{width:13rem;will-change:transform,opacity}
+@media (min-width:640px){.coach-anim{width:16rem}}
+.coach-fig{position:relative;transform:rotate(6deg);aspect-ratio:3/4;border-radius:var(--radius-card);background:var(--brand);overflow:hidden}
+.coach-fig img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.coach-cap{
+  position:absolute;left:.75rem;right:.75rem;bottom:.75rem;
+  border-radius:var(--radius-xl);
+  background:rgba(15,47,99,.4);color:#fff;
+  -webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);
+  padding:.5rem .75rem;
+}
+.coach-cap .n{display:block;font-size:.875rem;font-weight:500}
+.coach-cap .r{display:block;font-size:.65rem;opacity:.8}
+
+.trust-controls{position:relative;z-index:20;display:flex;align-items:center;justify-content:space-between;margin-top:3rem}
+@media (min-width:640px){.trust-controls{margin-top:6rem}}
+
+/* ============================================================= programs */
+.programs{background:var(--surface);padding:6rem 1.5rem}
+@media (min-width:640px){.programs{padding:6rem 2.5rem}}
+.programs h2{font-size:3rem;font-weight:500;line-height:.95;letter-spacing:-.02em;margin-top:1rem}
+.prog-list{margin-top:3.5rem}
+.prog-row{display:block;border-top:1px solid var(--hairline)}
+.prog-list li:last-child .prog-row{border-bottom:1px solid var(--hairline)}
+.prog-row:focus-visible{background:var(--background)}
+.prog-inner{display:flex;align-items:center;gap:1.5rem;padding:1.75rem 0;will-change:transform,opacity}
+.prog-idx{width:2.5rem;flex:none;font-size:.875rem;font-weight:500;color:var(--ink-soft)}
+.prog-name{display:block;font-size:1.5rem;font-weight:500;letter-spacing:-.02em;line-height:1.1}
+@media (min-width:640px){.prog-name{font-size:1.875rem}}
+.prog-desc{display:block;font-size:.875rem;color:var(--ink-soft);margin-top:.375rem}
+.prog-arrow{
+  margin-left:auto;flex:none;display:grid;place-items:center;
+  width:2.75rem;height:2.75rem;border-radius:var(--radius-pill);
+  border:1px solid var(--hairline);
+}
+.prog-arrow svg{width:1.125rem;height:1.125rem;opacity:.55;will-change:transform,opacity}
+
+/* ============================================================= facilities */
+.facilities{
+  position:relative;z-index:1;
+  background:var(--background);
+  border-radius:var(--radius-card-lg);
+  margin-top:-2.5rem;
+  padding:4rem 1.5rem 5rem;
+}
+@media (min-width:640px){.facilities{padding:4rem 2.5rem 5rem}}
+.fac-grid{display:grid;grid-template-columns:1fr;align-items:end;gap:2.5rem}
+@media (min-width:768px){.fac-grid{grid-template-columns:1fr 1fr}}
+.fac-intro{max-width:24rem}
+.fac-icon{width:4rem;height:4rem;border-radius:var(--radius-card);object-fit:cover;will-change:transform,opacity}
+.fac-title{font-size:3rem;font-weight:500;line-height:.95;letter-spacing:-.02em;margin-top:1.5rem}
+.fac-body{font-size:.875rem;line-height:1.7;color:var(--ink-soft);max-width:20rem;margin-top:1.5rem}
+.fac-cards{display:flex;align-items:flex-end;gap:1.25rem}
+.fac-card{flex:1;min-width:0;will-change:transform,opacity}
+.fac-card+.fac-card{margin-bottom:2rem}
+.fac-fig{position:relative;aspect-ratio:3/4;border-radius:var(--radius-card);overflow:hidden;background:var(--surface)}
+.fac-fig img{width:100%;height:100%;object-fit:cover;will-change:transform}
+.fac-cap{
+  position:absolute;left:.75rem;right:.75rem;bottom:.75rem;
+  border-radius:var(--radius-xl);color:#fff;padding:.75rem 1rem;
+  -webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);
+}
+.fac-cap.blue{background:rgba(11,110,151,.55)}
+.fac-cap.clay{background:rgba(15,47,99,.4)}
+.fac-cap .n{display:block;font-size:.875rem;font-weight:500}
+.fac-cap .d{display:block;font-size:.65rem;opacity:.85;margin-top:.125rem}
+
+/* ============================================================= stats */
+.stats{
+  background:var(--brand-deep);color:var(--on-brand);
+  border-radius:var(--radius-card-lg);
+  margin-top:.75rem;
+  padding:5rem 1.5rem;
+}
+@media (min-width:640px){.stats{padding:5rem 2.5rem}}
+.stats h2{font-size:3rem;font-weight:500;line-height:.95;letter-spacing:-.02em;margin-top:1rem}
+.stats-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));column-gap:2rem;row-gap:3rem;margin-top:4rem}
+@media (min-width:1024px){.stats-grid{grid-template-columns:repeat(4,minmax(0,1fr))}}
+.stat{border-top:1px solid rgba(255,255,255,.2);padding-top:1.25rem;will-change:transform,opacity}
+.stat .v{display:block;font-size:3.75rem;font-weight:500;letter-spacing:-.02em;line-height:1}
+@media (min-width:640px){.stat .v{font-size:4.5rem}}
+.stat .l{display:block;font-size:.875rem;color:rgba(255,255,255,.65);margin-top:.75rem}
+
+/* ============================================================= testimonials */
+.testimonials{background:var(--background);padding:5rem 1.5rem}
+@media (min-width:640px){.testimonials{padding:6rem 2.5rem}}
+.testimonials h2{font-size:3rem;font-weight:500;line-height:.95;letter-spacing:-.02em;margin-top:1rem}
+.tst-grid{display:grid;grid-template-columns:1fr;gap:1.25rem;margin-top:3.5rem}
+@media (min-width:768px){.tst-grid{grid-template-columns:repeat(3,minmax(0,1fr))}}
+.tst-card{
+  display:flex;flex-direction:column;justify-content:space-between;height:100%;
+  border-radius:var(--radius-card);background:var(--surface);padding:1.75rem;
+  will-change:transform,opacity;
+}
+.tst-q{font-size:2.25rem;line-height:1;color:var(--brand)}
+.tst-card blockquote{font-size:1.125rem;line-height:1.625;color:var(--ink);margin-top:1rem}
+.tst-card figcaption{border-top:1px solid var(--hairline);padding-top:1rem;margin-top:1.5rem}
+.tst-card figcaption .n{display:block;font-weight:500}
+.tst-card figcaption .r{display:block;font-size:.875rem;color:var(--ink-soft)}
+
+/* ============================================================= footer */
+.site-footer{
+  background:var(--brand-deep);color:var(--on-brand);
+  border-radius:var(--radius-card-lg);
+  margin-top:.75rem;
+  padding:3.5rem 1.5rem;
+}
+@media (min-width:640px){.site-footer{padding:4rem 2.5rem}}
+.foot-cta{
+  display:flex;flex-direction:column;gap:2rem;
+  border-bottom:1px solid rgba(255,255,255,.15);
+  padding-bottom:3.5rem;
+}
+@media (min-width:640px){.foot-cta{flex-direction:row;justify-content:space-between;align-items:flex-end}}
+.foot-cta p.big{font-size:3.75rem;font-weight:500;line-height:.92;letter-spacing:-.02em;margin-top:1rem}
+.foot-cols{display:grid;grid-template-columns:1fr;gap:2.5rem;padding:3.5rem 0}
+@media (min-width:768px){.foot-cols{grid-template-columns:1.4fr 1fr 1fr 1fr}}
+.foot-brand{max-width:20rem}
+.foot-brand .brandmark{font-size:1.125rem}
+.foot-brand .brandmark svg{width:1.25rem;height:1.25rem}
+.foot-blurb{font-size:.875rem;line-height:1.6;color:rgba(255,255,255,.65);margin-top:1rem}
+.foot-address{font-style:normal;margin-top:1.5rem;font-size:.875rem;color:rgba(255,255,255,.8);display:flex;flex-direction:column;gap:.375rem}
+.foot-address a:hover{color:#fff;text-decoration:underline;text-underline-offset:.25rem}
+.foot-address .muted{color:rgba(255,255,255,.55)}
+.foot-col h3{font-size:.75rem;font-weight:500;text-transform:uppercase;letter-spacing:.2em;color:rgba(255,255,255,.5)}
+.foot-col ul{margin-top:1rem;font-size:.875rem;color:rgba(255,255,255,.8);display:flex;flex-direction:column;gap:.75rem}
+.foot-col a:hover{color:#fff}
+.foot-bottom{
+  display:flex;flex-direction:column;gap:1.25rem;
+  border-top:1px solid rgba(255,255,255,.15);
+  padding-top:2rem;font-size:.875rem;color:rgba(255,255,255,.6);
+}
+@media (min-width:640px){.foot-bottom{flex-direction:row;justify-content:space-between;align-items:center}}
+.foot-bottom ul{display:flex;flex-wrap:wrap;gap:1.25rem}
+.foot-bottom a:hover{color:#fff}
+
+/* ============================================================= loader */
+.loader{
+  position:fixed;inset:0;z-index:200;
+  background:var(--brand-deep);color:#fff;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2rem;
+  will-change:transform;
+}
+.loader-mark{font-size:1.5rem;will-change:transform,opacity;opacity:0}
+.loader-mark svg{width:1.75rem;height:1.75rem}
+.loader-track{width:10rem;height:1px;border-radius:var(--radius-pill);background:rgba(255,255,255,.2);overflow:hidden}
+.loader-fill{width:100%;height:100%;background:#fff;transform:scaleX(0);transform-origin:left}
+
+/* ============================================================= menu overlay */
+.menu{position:fixed;inset:0;z-index:70;display:flex;flex-direction:column;pointer-events:none}
+.menu.open{pointer-events:auto}
+.menu-backdrop{position:absolute;inset:0;background:var(--brand-deep);opacity:0}
+.menu-panel{position:relative;display:flex;flex-direction:column;height:100%;padding:.5rem;color:#fff;opacity:0;will-change:transform,opacity}
+@media (min-width:640px){.menu-panel{padding:.75rem}}
+.menu-inner{display:flex;flex-direction:column;height:100%;padding:1.5rem}
+@media (min-width:640px){.menu-inner{padding:2rem 2.5rem}}
+.menu-top{display:flex;align-items:center;justify-content:space-between}
+.menu-top .brandmark{font-size:1rem}
+.menu-top .brandmark svg{width:1.25rem;height:1.25rem}
+.icon-btn{
+  display:grid;place-items:center;width:2.5rem;height:2.5rem;flex:none;
+  border-radius:var(--radius-pill);background:rgba(255,255,255,.15);
+  -webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);
+  transition:background-color .3s ease;
+}
+.icon-btn:hover{background:rgba(255,255,255,.25)}
+.icon-btn svg{width:1.125rem;height:1.125rem;will-change:transform}
+.menu-nav{flex:1;display:flex;flex-direction:column;justify-content:center;gap:.5rem}
+.menu-nav a{
+  display:block;font-size:3rem;font-weight:500;letter-spacing:-.02em;line-height:1.05;
+  opacity:0;will-change:transform,opacity;transition:color .3s ease;
+}
+@media (min-width:640px){.menu-nav a{font-size:4.5rem}}
+.menu-nav a:hover{color:var(--brand-light)}
+.menu-bottom{
+  display:flex;flex-direction:column;gap:1.25rem;
+  border-top:1px solid rgba(255,255,255,.15);padding-top:2rem;
+}
+@media (min-width:640px){.menu-bottom{flex-direction:row;justify-content:space-between;align-items:center}}
+.menu-bottom nav ul{display:flex;flex-wrap:wrap;gap:1.25rem;font-size:.875rem;color:rgba(255,255,255,.7)}
+.menu-bottom nav a:hover{color:#fff}
+
+/* ============================================================= modal */
+.modal{position:fixed;inset:0;z-index:90;display:flex;align-items:flex-end;justify-content:center;padding:.75rem;pointer-events:none}
+@media (min-width:640px){.modal{align-items:center;padding:1.5rem}}
+.modal.open{pointer-events:auto}
+.modal-backdrop{position:absolute;inset:0;background:rgba(15,47,99,.4);-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);opacity:0}
+.modal-panel{
+  position:relative;width:100%;
+  max-height:92svh;overflow-y:auto;
+  border-radius:var(--radius-card-lg);
+  background:var(--surface-card);color:var(--ink);
+  padding:1.5rem;
+  box-shadow:0 2rem 5rem rgba(15,47,99,.35);
+  opacity:0;will-change:transform,opacity;
+}
+@media (min-width:640px){.modal-panel{max-width:32rem;padding:2rem}}
+.modal-head{display:flex;align-items:flex-start;justify-content:space-between;gap:1rem}
+.modal-head h2{font-size:2.25rem;font-weight:500;line-height:.95;letter-spacing:-.02em;margin-top:.75rem}
+@media (min-width:640px){.modal-head h2{font-size:3rem}}
+.modal-close{
+  display:grid;place-items:center;width:2.5rem;height:2.5rem;flex:none;
+  border-radius:var(--radius-pill);background:var(--surface);
+  transition:background-color .3s ease;
+}
+.modal-close:hover{background:var(--hairline)}
+.modal-close svg{width:1.125rem;height:1.125rem;will-change:transform}
+.modal-form{display:flex;flex-direction:column;gap:1rem;margin-top:1.75rem}
+.field{display:flex;flex-direction:column;gap:.5rem}
+.field label{font-size:.75rem;font-weight:500;text-transform:uppercase;letter-spacing:.18em;color:var(--ink-soft)}
+.field input,.field textarea{
+  width:100%;border-radius:var(--radius-xl);
+  border:1px solid var(--hairline);background:var(--background);
+  padding:.75rem 1rem;font-size:.875rem;resize:vertical;
+  transition:border-color .25s ease,box-shadow .25s ease;
+}
+.field input:focus,.field textarea:focus{outline:none;border-color:var(--brand-light);box-shadow:0 0 0 2px rgba(87,144,230,.35)}
+.modal-form button[type="submit"]{align-self:flex-start;margin-top:.25rem}
+.success{margin-top:2rem;border-radius:var(--radius-card);background:var(--surface);padding:1.5rem;text-align:center}
+.success .check{display:grid;place-items:center;width:3rem;height:3rem;margin:0 auto;border-radius:var(--radius-pill);background:var(--brand);color:#fff}
+.success .check svg{width:1.25rem;height:1.25rem}
+.success h3{font-size:1.125rem;font-weight:500;margin-top:1rem}
+.success p{font-size:.875rem;color:var(--ink-soft);margin-top:.5rem}
+.success .pill{margin-top:1.5rem}
+[hidden]{display:none !important}
+</style>
+</head>
+<body>
+
+<!-- icon sprite -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
+  <defs>
+    <symbol id="i-ball" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+      <circle cx="12" cy="12" r="9"/>
+      <path d="M4.8 5.6A9 9 0 0 0 4.8 18.4"/>
+      <path d="M19.2 5.6a9 9 0 0 1 0 12.8"/>
+    </symbol>
+    <symbol id="i-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M5 12h14M13 6l6 6-6 6"/>
+    </symbol>
+    <symbol id="i-close" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M6 6l12 12M18 6L6 18"/>
+    </symbol>
+    <symbol id="i-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M5 13l4 4L19 7"/>
+    </symbol>
+  </defs>
+</svg>
+
+<!-- ============================================================ loader -->
+<div class="loader" id="loader" role="status" aria-live="polite" aria-label="Loading Baseline">
+  <span class="brandmark loader-mark" id="loader-mark">
+    <svg aria-hidden="true"><use href="#i-ball"></use></svg>
+    <span>Baseline</span>
+  </span>
+  <div class="loader-track"><div class="loader-fill" id="loader-fill"></div></div>
+</div>
+
+<main>
+  <!-- ========================================================== hero -->
+  <section class="hero" id="top">
+    <div class="hero-bg">
+      <div class="hero-plate" id="hero-plate">
+        <img src="https://api.getlayers.ai/storage/v1/object/public/public/assets/baseline-88535e4000/hero/hero-court.webp"
+             alt="Player lunging for a shot on a hard court" loading="eager" fetchpriority="high" decoding="async">
+      </div>
+      <div class="hero-grad"></div>
+    </div>
+
+    <header class="site-header">
+      <nav class="hdr-left" aria-label="Primary">
+        <a href="#programs">Programs &amp; Coaches</a>
+        <a href="#facilities">Club &amp; Events</a>
+      </nav>
+      <div class="hdr-center">
+        <a class="brandmark" href="#top">
+          <svg aria-hidden="true"><use href="#i-ball"></use></svg>
+          <span>Baseline</span>
+        </a>
+      </div>
+      <div class="hdr-right">
+        <button type="button" class="hdr-book" data-open-modal>Book a Visit</button>
+        <button type="button" class="burger" data-open-menu aria-label="Open menu" aria-haspopup="dialog">
+          <span></span><span></span>
+        </button>
+      </div>
+    </header>
+
+    <div class="hero-title-wrap">
+      <h1 id="hero-title" class="hero-title"></h1>
+    </div>
+
+    <div class="hero-bottom">
+      <p class="hero-tagline" id="hero-tagline"></p>
+
+      <div class="hero-right">
+        <div class="collection" id="collection">
+          <div class="coll-stack" id="coll-stack">
+            <article class="coll-card" id="coll-card">
+              <img id="coll-img" src="" alt="" loading="lazy" decoding="async">
+              <div>
+                <p class="coll-brand" id="coll-brand"></p>
+                <p class="coll-title" id="coll-title"></p>
+                <span class="coll-cta" id="coll-cta"></span>
+              </div>
+            </article>
+          </div>
+          <div class="dots light" id="coll-dots" role="tablist" aria-label="Featured collections"></div>
+        </div>
+
+        <article class="member-card" id="member-card">
+          <div class="mc-left">
+            <p class="mc-value">9K+</p>
+            <div class="mc-dots" aria-hidden="true">
+              <span style="background:#5790e6"></span>
+              <span style="background:#c2e029"></span>
+              <span style="background:#0b6e97"></span>
+              <span style="background:#ffffff"></span>
+            </div>
+            <p class="mc-cap">Members on court</p>
+          </div>
+          <img class="mc-img" src="https://api.getlayers.ai/storage/v1/object/public/public/assets/baseline-88535e4000/1.webp"
+               alt="Player waiting to return on a clay court" loading="lazy" decoding="async">
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========================================================== trust -->
+  <section class="trust" id="trust">
+    <div class="trust-top">
+      <div class="pct-badge" id="pct-badge">
+        <span class="v">100%</span>
+        <span class="c">Coaching built around your game</span>
+      </div>
+      <article class="badge-card" id="badge-card">
+        <span class="badge-chip">#01</span>
+        <div>
+          <h3>Trusted by serious players</h3>
+          <p>From first-timers to nationally ranked juniors, players train here because the progress shows up on the scoreboard.</p>
+        </div>
+      </article>
+    </div>
+
+    <h2 class="ghost-title" id="trust-title">
+      <span class="ghost-row">
+        <span class="gw" data-gw="0"></span>
+        <span class="gw" data-gw="1"></span>
+      </span>
+      <span class="ghost-row">
+        <span class="gw ink" data-gw="2"></span>
+        <span class="gw" data-gw="3"></span>
+      </span>
+    </h2>
+
+    <div class="coach-slot">
+      <div class="coach-anim" id="coach-anim">
+        <figure class="coach-fig">
+          <img id="coach-img" src="" alt="" loading="lazy" decoding="async">
+          <figcaption class="coach-cap">
+            <span class="n" id="coach-name"></span>
+            <span class="r" id="coach-role"></span>
+          </figcaption>
+        </figure>
+      </div>
+    </div>
+
+    <div class="trust-controls">
+      <button type="button" class="abtn outline" id="trust-prev" data-flip aria-label="Previous coach">
+        <svg aria-hidden="true" style="transform:scaleX(-1)"><use href="#i-arrow"></use></svg>
+      </button>
+      <div class="dots dark" id="trust-dots" role="tablist" aria-label="Coaches"></div>
+      <button type="button" class="abtn solid" id="trust-next" aria-label="Next coach">
+        <svg aria-hidden="true"><use href="#i-arrow"></use></svg>
+      </button>
+    </div>
+  </section>
+
+  <!-- ========================================================== programs -->
+  <section class="programs" id="programs">
+    <span class="eyebrow dark">Training programs</span>
+    <h2 id="programs-title"></h2>
+    <ul class="prog-list" id="prog-list"></ul>
+  </section>
+
+  <!-- ========================================================== facilities -->
+  <section class="facilities" id="facilities">
+    <div class="fac-grid">
+      <div class="fac-intro">
+        <img class="fac-icon" id="fac-icon"
+             src="https://api.getlayers.ai/storage/v1/object/public/public/assets/baseline-88535e4000/3.webp"
+             alt="Player stretching for a forehand on clay" loading="lazy" decoding="async">
+        <h2 class="fac-title" id="facilities-title"></h2>
+        <p class="fac-body" id="facilities-body"></p>
+      </div>
+      <div class="fac-cards" id="fac-cards"></div>
+    </div>
+  </section>
+
+  <!-- ========================================================== stats -->
+  <section class="stats">
+    <span class="eyebrow light">By the numbers</span>
+    <h2 id="stats-title"></h2>
+    <dl class="stats-grid" id="stats-grid"></dl>
+  </section>
+
+  <!-- ========================================================== testimonials -->
+  <section class="testimonials" id="testimonials">
+    <span class="eyebrow dark">What players say</span>
+    <h2 id="testimonials-title"></h2>
+    <ul class="tst-grid" id="tst-grid"></ul>
+  </section>
+
+  <!-- ========================================================== footer -->
+  <footer class="site-footer" id="contact">
+    <div class="foot-cta">
+      <div>
+        <span class="eyebrow light">Get started</span>
+        <p class="big" id="foot-cta-title"></p>
+      </div>
+      <button type="button" class="pill light" id="foot-cta-btn" data-open-modal>
+        <span>Book a Visit</span>
+        <svg aria-hidden="true"><use href="#i-arrow"></use></svg>
+      </button>
+    </div>
+
+    <div class="foot-cols">
+      <div class="foot-brand">
+        <span class="brandmark">
+          <svg aria-hidden="true"><use href="#i-ball"></use></svg>
+          <span>Baseline</span>
+        </span>
+        <p class="foot-blurb">A members' tennis club and academy where focused coaching meets championship courts.</p>
+        <address class="foot-address">
+          <a href="mailto:play@baseline.club">play@baseline.club</a>
+          <a href="tel:+12125550148">+1 (212) 555-0148</a>
+          <span class="muted">120 Court Lane, New York</span>
+        </address>
+      </div>
+
+      <nav class="foot-col" aria-label="Programs">
+        <h3>Programs</h3>
+        <ul>
+          <li><a href="#junior">Junior Development</a></li>
+          <li><a href="#performance">Performance Squad</a></li>
+          <li><a href="#adult">Adult Clinics</a></li>
+          <li><a href="#private">Private Coaching</a></li>
+        </ul>
+      </nav>
+
+      <nav class="foot-col" aria-label="Club">
+        <h3>Club</h3>
+        <ul>
+          <li><a href="#membership">Membership</a></li>
+          <li><a href="#facilities">Facilities</a></li>
+          <li><a href="#club">Events</a></li>
+          <li><a href="#shop">Pro Shop</a></li>
+        </ul>
+      </nav>
+
+      <nav class="foot-col" aria-label="Company">
+        <h3>Company</h3>
+        <ul>
+          <li><a href="#about">About</a></li>
+          <li><a href="#programs">Coaches</a></li>
+          <li><a href="#careers">Careers</a></li>
+          <li><a href="#contact">Contact</a></li>
+        </ul>
+      </nav>
+    </div>
+
+    <div class="foot-bottom">
+      <p>© 2026 Baseline Tennis Club. All rights reserved.</p>
+      <nav aria-label="Social">
+        <ul>
+          <li><a href="#instagram">Instagram</a></li>
+          <li><a href="#x">X</a></li>
+          <li><a href="#youtube">YouTube</a></li>
+          <li><a href="#linkedin">LinkedIn</a></li>
+        </ul>
+      </nav>
+      <nav aria-label="Legal">
+        <ul>
+          <li><a href="#privacy">Privacy</a></li>
+          <li><a href="#terms">Terms</a></li>
+        </ul>
+      </nav>
+    </div>
+  </footer>
+</main>
+
+<!-- ============================================================ menu overlay -->
+<div class="menu" id="menu" aria-hidden="true">
+  <div class="menu-backdrop" id="menu-backdrop"></div>
+  <div class="menu-panel" id="menu-panel" role="dialog" aria-modal="true" aria-label="Site menu">
+    <div class="menu-inner">
+      <div class="menu-top">
+        <span class="brandmark">
+          <svg aria-hidden="true"><use href="#i-ball"></use></svg>
+          <span>Baseline</span>
+        </span>
+        <button type="button" class="icon-btn" id="menu-close" aria-label="Close menu">
+          <svg aria-hidden="true"><use href="#i-close"></use></svg>
+        </button>
+      </div>
+
+      <nav class="menu-nav" id="menu-nav" aria-label="Menu">
+        <a href="#programs">Programs</a>
+        <a href="#facilities">Facilities</a>
+        <a href="#testimonials">Reviews</a>
+        <a href="#contact">Contact</a>
+      </nav>
+
+      <div class="menu-bottom">
+        <button type="button" class="pill light" id="menu-book">
+          <span>Book a Visit</span>
+          <svg aria-hidden="true"><use href="#i-arrow"></use></svg>
+        </button>
+        <nav aria-label="Social">
+          <ul>
+            <li><a href="#instagram">Instagram</a></li>
+            <li><a href="#x">X</a></li>
+            <li><a href="#youtube">YouTube</a></li>
+            <li><a href="#linkedin">LinkedIn</a></li>
+          </ul>
+        </nav>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================ contact modal -->
+<div class="modal" id="modal" aria-hidden="true">
+  <div class="modal-backdrop" id="modal-backdrop"></div>
+  <div class="modal-panel" id="modal-panel" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+    <div class="modal-head">
+      <div>
+        <span class="eyebrow dark">Book a visit</span>
+        <h2 id="modal-title"></h2>
+      </div>
+      <button type="button" class="modal-close" id="modal-close" aria-label="Close dialog">
+        <svg aria-hidden="true"><use href="#i-close"></use></svg>
+      </button>
+    </div>
+
+    <form class="modal-form" id="modal-form" novalidate>
+      <div class="field">
+        <label for="f-name">Full name</label>
+        <input id="f-name" name="name" type="text" placeholder="Alex Rivera" autocomplete="name">
+      </div>
+      <div class="field">
+        <label for="f-email">Email</label>
+        <input id="f-email" name="email" type="email" placeholder="you@email.com" autocomplete="email">
+      </div>
+      <div class="field">
+        <label for="f-msg">What would you like to play?</label>
+        <textarea id="f-msg" name="message" rows="3" placeholder="I'd love to try a private lesson on the clay courts…"></textarea>
+      </div>
+      <button type="submit" class="pill solid" id="modal-submit"><span id="modal-submit-label">Request a visit</span></button>
+    </form>
+
+    <div class="success" id="modal-success" hidden>
+      <span class="check"><svg aria-hidden="true"><use href="#i-check"></use></svg></span>
+      <h3>Request received</h3>
+      <p id="success-copy"></p>
+      <button type="button" class="pill solid" id="success-done"><span>Done</span></button>
+    </div>
+  </div>
+</div>
+
+<script type="module">
+import Lenis from 'lenis';
+
+/* ===================================================== constants (baked in) */
+const ASSETS = 'https://api.getlayers.ai/storage/v1/object/public/public/assets/baseline-88535e4000';
+
+const FONT_BASE = 16, BASE_W = 1920, COEF = 0.6666;
+
+const MIN_VISIBLE_MS = 1400, MAX_VISIBLE_MS = 2600, EXIT_MS = 850;
+const LOADER_FILL_DELAY = 120, LOADER_FILL_DURATION = MIN_VISIBLE_MS - LOADER_FILL_DELAY; /* 1280 */
+
+const EASE_OUT_EXPO      = 'cubic-bezier(.16,1,.3,1)';
+const EASE_OUT_QUART     = 'cubic-bezier(.25,1,.5,1)';
+const EASE_IN_OUT_CUBIC  = 'cubic-bezier(.65,0,.35,1)';
+
+const REDUCED = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+const HERO_TITLE = 'Own The Court';
+const HERO_TAGLINE_LINES = ['Show Up,', 'Level Up'];
+
+const COLLECTIONS = [
+  { image:`${ASSETS}/2.webp`, brand:'Baseline Pro', title:'Featured Gear', cta:'Shop the kit',  alt:'Player driving a backhand on a hard court' },
+  { image:`${ASSETS}/3.webp`, brand:'Court Series', title:'Summer Drop',   cta:'View the line', alt:'Player stretching for a forehand on clay' },
+  { image:`${ASSETS}/5.webp`, brand:'Academy Kit',  title:'Junior Range',  cta:'Browse juniors',alt:'Player set in a ready stance on clay' },
+];
+const COLLECTION_INTERVAL = 3800;
+
+const TRUST_SLIDES = [
+  { headline:['Expert','Result-','Driven','Coaching'], image:`${ASSETS}/5.webp`, name:'Marco Vidal',     role:'Head Coach',        alt:'Head coach set in a ready stance on clay' },
+  { headline:['Sharper','Faster','Stronger','Player'], image:`${ASSETS}/4.webp`, name:'Elena Sokolova',  role:'Performance Coach', alt:'Performance coach following through on a serve' },
+  { headline:['Future','Champions','Start','Here'],    image:`${ASSETS}/1.webp`, name:'James Okoro',     role:'Juniors Lead',      alt:'Juniors lead waiting to return on clay' },
+];
+
+const PROGRAMS = [
+  { index:'01', name:'Junior Development', description:'Fundamentals, footwork, and match play for ages 6–14.',      href:'#junior' },
+  { index:'02', name:'Performance Squad',  description:'High-volume training for competitive and ranked players.',   href:'#performance' },
+  { index:'03', name:'Adult Clinics',      description:'Small-group sessions to sharpen technique and fitness.',     href:'#adult' },
+  { index:'04', name:'Private Coaching',   description:'One-to-one sessions tailored to your goals and schedule.',   href:'#private' },
+];
+
+const COURTS = [
+  { tone:'clay', image:`${ASSETS}/1.webp`, name:'Redline Clay', description:'A fast outdoor clay court tuned for long, physical rallies.', alt:'Player on the baseline of an outdoor clay court' },
+  { tone:'blue', image:`${ASSETS}/4.webp`, name:'Harbor Court', description:'A sheltered hard court built for precision and night play.',  alt:'Player following through on a blue hard court' },
+];
+
+const STATS = [
+  { value:'24',  label:'Certified coaches' },
+  { value:'12',  label:'Championship courts' },
+  { value:'9K+', label:'Members training' },
+  { value:'15',  label:'Years on the baseline' },
+];
+
+const TESTIMONIALS = [
+  { quote:'I added a level to my serve in one season. The coaching is detailed and it actually sticks.', name:'Priya Anand',   role:'Performance Squad' },
+  { quote:'Best courts in the city and a team that treats every member like a competitor.',             name:'Lukas Brenner', role:'Adult Clinics' },
+  { quote:'My daughter went from shy beginner to club champion. Worth every minute.',                   name:'Dana Okafor',   role:'Parent, Junior Development' },
+];
+
+/* ===================================================== adaptive rem grid */
+const html = document.documentElement;
+function setRootFont(){
+  const reduction = ((BASE_W - window.innerWidth) / BASE_W) * 100 * COEF;
+  const size = FONT_BASE - (FONT_BASE * reduction) / 100;
+  if (size > FONT_BASE) html.style.fontSize = size + 'px';
+  else html.style.removeProperty('font-size');
+}
+setRootFont();
+window.addEventListener('resize', setRootFont);
+
+/* ===================================================== spring engine */
+const SPRINGS = new Set();
+
+class Spring {
+  constructor(from, config, apply){
+    this.keys = Object.keys(from);
+    this.x = { ...from };
+    this.target = { ...from };
+    this.v = {};
+    this.keys.forEach(k => this.v[k] = 0);
+    this.tension = config.tension;
+    this.friction = config.friction;
+    this.apply = apply;
+    this.active = false;
+    SPRINGS.add(this);
+    this.apply(this.x);
+  }
+  to(target){
+    Object.assign(this.target, target);
+    this.active = true;
+  }
+  set(values){
+    Object.assign(this.x, values);
+    Object.assign(this.target, values);
+    this.keys.forEach(k => this.v[k] = 0);
+    this.active = false;
+    this.apply(this.x);
+  }
+  step(dt){
+    if (!this.active) return;
+    let moving = false;
+    for (const k of this.keys){
+      const d = this.x[k] - this.target[k];
+      const a = -this.tension * d - this.friction * this.v[k];
+      this.v[k] += a * dt;
+      this.x[k] += this.v[k] * dt;
+      if (Math.abs(this.x[k] - this.target[k]) > 0.0004 || Math.abs(this.v[k]) > 0.0004) moving = true;
+      else { this.x[k] = this.target[k]; this.v[k] = 0; }
+    }
+    this.apply(this.x);
+    if (!moving) this.active = false;
+  }
+}
+
+function transformOf(v, base){
+  let s = base ? base + ' ' : '';
+  if ('x' in v || 'y' in v) s += `translate3d(${(v.x || 0).toFixed(3)}px, ${(v.y || 0).toFixed(3)}px, 0) `;
+  if ('scale' in v)  s += `scale(${v.scale.toFixed(4)}) `;
+  if ('scaleX' in v) s += `scaleX(${v.scaleX.toFixed(4)}) `;
+  if ('rotate' in v) s += `rotate(${v.rotate.toFixed(2)}deg) `;
+  return s.trim();
+}
+
+function springEl(el, from, config, base){
+  return new Spring(from, config, v => {
+    if ('opacity' in v) el.style.opacity = v.opacity;
+    const t = transformOf(v, base);
+    if (t) el.style.transform = t;
+  });
+}
+
+/* ===================================================== parallax */
+const PARALLAX = [];
+function addParallax(sectionEl, apply){ PARALLAX.push({ sectionEl, apply }); }
+function updateParallax(){
+  if (!PARALLAX.length) return;
+  const vh = window.innerHeight;
+  const cache = new Map();
+  for (const item of PARALLAX){
+    let r = cache.get(item.sectionEl);
+    if (!r){ r = item.sectionEl.getBoundingClientRect(); cache.set(item.sectionEl, r); }
+    let p = (vh - r.top) / (vh + r.height);
+    p = p < 0 ? 0 : p > 1 ? 1 : p;
+    item.apply(p);
+  }
+}
+
+/* ===================================================== lenis + rAF loop */
+const lenis = new Lenis({ smoothWheel: true });
+let lastT = performance.now();
+function raf(t){
+  lenis.raf(t);
+  let dt = (t - lastT) / 1000;
+  lastT = t;
+  if (dt > 1 / 30) dt = 1 / 30;
+  for (const s of SPRINGS) s.step(dt);
+  updateParallax();
+  requestAnimationFrame(raf);
+}
+requestAnimationFrame(raf);
+window.addEventListener('resize', updateParallax);
+
+let lockCount = 0;
+function lockScroll(){
+  lockCount++;
+  if (lockCount === 1){ lenis.stop(); html.classList.add('is-locked'); }
+}
+function unlockScroll(){
+  lockCount = Math.max(0, lockCount - 1);
+  if (lockCount === 0){ lenis.start(); html.classList.remove('is-locked'); }
+}
+
+window.scrollTo(0, 0);
+
+/* ===================================================== reveal primitives */
+const IO = new IntersectionObserver(entries => {
+  for (const e of entries){
+    if (!e.isIntersecting) continue;
+    IO.unobserve(e.target);
+    const fn = e.target.__onview;
+    if (fn) fn();
+  }
+}, { threshold: 0.12, rootMargin: '0px 0px -4% 0px' });
+
+function onView(el, fn){ el.__onview = fn; IO.observe(el); }
+
+/* 1a. clip-mask word reveal */
+function wordReveal(el, text, opts){
+  const { duration = 1100, easing = EASE_OUT_EXPO, stagger = 140, delay = 0, pad = '0.12em' } = opts || {};
+  el.textContent = '';
+  const words = String(text).split(/\s+/).filter(Boolean);
+  const clips = [];
+  words.forEach((w, i) => {
+    const clip = document.createElement('span');
+    clip.className = 'clip';
+    clip.style.paddingBottom = pad;
+    const inner = document.createElement('span');
+    inner.textContent = w;
+    const d = delay + i * stagger;
+    inner.style.transition = `transform ${duration}ms ${easing} ${d}ms, opacity ${duration}ms ${easing} ${d}ms`;
+    clip.appendChild(inner);
+    el.appendChild(clip);
+    if (i < words.length - 1) el.appendChild(document.createTextNode(' '));
+    clips.push(clip);
+  });
+  return clips;
+}
+function playClips(clips){
+  requestAnimationFrame(() => requestAnimationFrame(() => clips.forEach(c => c.classList.add('in'))));
+}
+
+/* 1b. clip-mask stacked lines */
+function stackedLines(el, lines, opts){
+  const { duration = 950, easing = EASE_OUT_EXPO, stagger = 120, baseDelay = 0 } = opts || {};
+  el.textContent = '';
+  const clips = [];
+  lines.forEach((line, i) => {
+    const clip = document.createElement('span');
+    clip.className = 'clipline';
+    const inner = document.createElement('span');
+    inner.textContent = line;
+    const d = baseDelay + i * stagger;
+    inner.style.transition = `transform ${duration}ms ${easing} ${d}ms, opacity ${duration}ms ${easing} ${d}ms`;
+    clip.appendChild(inner);
+    el.appendChild(clip);
+    clips.push(clip);
+  });
+  return clips;
+}
+
+/* 1c. word fade + rise (facilities body) */
+function wordFade(el, text, opts){
+  const { duration = 700, easing = EASE_OUT_QUART, wordStagger = 28, delayIn = 250 } = opts || {};
+  el.textContent = '';
+  const words = String(text).split(/\s+/).filter(Boolean);
+  const spans = [];
+  words.forEach((w, i) => {
+    const s = document.createElement('span');
+    s.className = 'wfade';
+    s.textContent = w;
+    const d = delayIn + i * wordStagger;
+    s.style.transition = `transform ${duration}ms ${easing} ${d}ms, opacity ${duration}ms ${easing} ${d}ms`;
+    el.appendChild(s);
+    if (i < words.length - 1) el.appendChild(document.createTextNode(' '));
+    spans.push(s);
+  });
+  return spans;
+}
+
+/* helper: reveal a stacked/word heading the first time it scrolls into view */
+function revealOnView(el, clips){
+  onView(el, () => playClips(clips));
+}
+
+/* 2. inview spring */
+function inview(el, from, to, config, delayIn = 0, base){
+  const s = springEl(el, from, config, base);
+  onView(el, () => {
+    if (delayIn > 0) setTimeout(() => s.to(to), delayIn);
+    else s.to(to);
+  });
+  return s;
+}
+
+/* 3. hover spring (disabled ≤768px) */
+const mqDesktop = window.matchMedia('(min-width: 769px)');
+function hoverSpring(trigger, target, from, to, config, base){
+  const s = springEl(target, from, config, base);
+  const enter = () => { if (mqDesktop.matches) s.to(to); };
+  const leave = () => { s.to(from); };
+  trigger.addEventListener('pointerenter', enter);
+  trigger.addEventListener('pointerleave', leave);
+  trigger.addEventListener('focusin', enter);
+  trigger.addEventListener('focusout', leave);
+  return s;
+}
+
+/* ===================================================== shared component wiring */
+function buildDots(container, count, tone, onSelect){
+  container.innerHTML = '';
+  for (let i = 0; i < count; i++){
+    const b = document.createElement('button');
+    b.type = 'button';
+    b.setAttribute('role', 'tab');
+    b.setAttribute('aria-label', `Go to slide ${i + 1}`);
+    b.appendChild(document.createElement('i'));
+    b.addEventListener('click', () => onSelect(i));
+    container.appendChild(b);
+  }
+  return (active) => {
+    [...container.children].forEach((b, i) => b.setAttribute('aria-current', i === active ? 'true' : 'false'));
+  };
+}
+
+/* every pill button: trailing arrow springs x 0 → 5 on hover */
+document.querySelectorAll('.pill').forEach(pill => {
+  const svg = pill.querySelector('svg');
+  if (svg) hoverSpring(pill, svg, { x: 0 }, { x: 5 }, { tension: 320, friction: 20 });
+});
+
+/* carousel arrow buttons: inner arrow scales 1 → 1.15 on hover */
+document.querySelectorAll('.abtn').forEach(btn => {
+  const svg = btn.querySelector('svg');
+  if (!svg) return;
+  const base = btn.hasAttribute('data-flip') ? 'scaleX(-1)' : '';
+  hoverSpring(btn, svg, { scale: 1 }, { scale: 1.15 }, { tension: 320, friction: 18 }, base);
+});
+
+/* close icons rotate 0 → 90deg on hover */
+document.querySelectorAll('#menu-close, #modal-close').forEach(btn => {
+  hoverSpring(btn, btn.querySelector('svg'), { rotate: 0 }, { rotate: 90 }, { tension: 300, friction: 18 });
+});
+
+/* ===================================================== hero */
+const heroPlate = document.getElementById('hero-plate');
+addParallax(document.getElementById('top'), p => {
+  heroPlate.style.transform = `translate3d(0, ${(p * 12).toFixed(3)}%, 0)`;
+});
+
+const heroTitleClips = wordReveal(document.getElementById('hero-title'), HERO_TITLE, {
+  duration: 1100, easing: EASE_OUT_EXPO, stagger: 140, pad: '0.12em'
+});
+const heroTaglineClips = stackedLines(document.getElementById('hero-tagline'), HERO_TAGLINE_LINES, {
+  duration: 900, easing: EASE_OUT_EXPO, stagger: 110, baseDelay: 350
+});
+
+/* --- collection slider --- */
+const collStack   = document.getElementById('coll-stack');
+const collCard    = document.getElementById('coll-card');
+const collImg     = document.getElementById('coll-img');
+const collBrand   = document.getElementById('coll-brand');
+const collTitle   = document.getElementById('coll-title');
+const collCta     = document.getElementById('coll-cta');
+let collIndex = 0;
+
+function paintCollection(i){
+  const s = COLLECTIONS[i];
+  collImg.src = s.image;
+  collImg.alt = s.alt;
+  collBrand.textContent = s.brand;
+  collTitle.textContent = s.title;
+  collCta.textContent = `${s.cta} →`;
+}
+paintCollection(0);
+
+const collSpring = springEl(collCard, { opacity: 1, y: 0, scale: 1 }, { tension: 210, friction: 24 });
+const setCollDots = buildDots(document.getElementById('coll-dots'), COLLECTIONS.length, 'light', i => {
+  goCollection(i);
+  restartCollectionAutoplay();
+});
+setCollDots(0);
+
+function goCollection(next){
+  if (next === collIndex) return;
+  /* cache the outgoing card and cross-fade it out over the incoming one */
+  const clone = collCard.cloneNode(true);
+  clone.removeAttribute('id');
+  clone.classList.add('is-out');
+  collStack.appendChild(clone);
+  const outSpring = springEl(clone, { opacity: 1, y: 0, scale: 1 }, { tension: 210, friction: 24 });
+  outSpring.to({ opacity: 0, y: 16, scale: 0.96 });
+  setTimeout(() => { SPRINGS.delete(outSpring); clone.remove(); }, 700);
+
+  collIndex = next;
+  paintCollection(collIndex);
+  setCollDots(collIndex);
+  collSpring.set({ opacity: 0, y: 16, scale: 0.96 });
+  collSpring.to({ opacity: 1, y: 0, scale: 1 });
+}
+
+let collTimer = null;
+function startCollectionAutoplay(){
+  stopCollectionAutoplay();
+  collTimer = setInterval(() => goCollection((collIndex + 1) % COLLECTIONS.length), COLLECTION_INTERVAL);
+}
+function stopCollectionAutoplay(){ if (collTimer) clearInterval(collTimer); collTimer = null; }
+function restartCollectionAutoplay(){ if (collTimer) startCollectionAutoplay(); }
+
+/* hero cards are gated on the loader, so their springs start in the "out" state */
+const collectionEl = document.getElementById('collection');
+const collectionInSpring = springEl(collectionEl, { opacity: 0, y: 28 }, { tension: 200, friction: 26 });
+const memberEl = document.getElementById('member-card');
+const memberInSpring = springEl(memberEl, { opacity: 0, y: 28 }, { tension: 200, friction: 26 });
+
+/* ===================================================== trust carousel */
+const ghostWordEls = [...document.querySelectorAll('#trust-title .gw')];
+const coachAnim = document.getElementById('coach-anim');
+const coachImg  = document.getElementById('coach-img');
+const coachName = document.getElementById('coach-name');
+const coachRole = document.getElementById('coach-role');
+let trustIndex = 0;
+let ghostClips = [];
+
+const GHOST_PARALLAX = [
+  { from: -3, to:  3 },
+  { from:  3, to: -3 },
+  { from: -2, to:  4 },
+  { from:  4, to: -3 },
+];
+const trustSection = document.getElementById('trust');
+ghostWordEls.forEach((el, i) => {
+  const p = GHOST_PARALLAX[i];
+  addParallax(trustSection, prog => {
+    const x = p.from + (p.to - p.from) * prog;
+    el.style.transform = `translateX(${x.toFixed(3)}%)`;
+  });
+});
+
+function buildGhostWords(i){
+  const words = TRUST_SLIDES[i].headline;
+  ghostClips = ghostWordEls.map((el, k) =>
+    wordReveal(el, words[k], { duration: 700, easing: EASE_OUT_EXPO, stagger: 0, delay: k * 90, pad: '0.12em' })[0]
+  );
+}
+function playGhostWords(){ playClips(ghostClips); }
+
+const coachPhotoSpring = new Spring({ opacity: 1 }, { tension: 260, friction: 26 }, v => { coachImg.style.opacity = v.opacity; });
+
+function paintCoach(i){
+  const s = TRUST_SLIDES[i];
+  coachImg.src = s.image;
+  coachImg.alt = s.alt;
+  coachName.textContent = s.name;
+  coachRole.textContent = s.role;
+}
+
+const setTrustDots = buildDots(document.getElementById('trust-dots'), TRUST_SLIDES.length, 'dark', i => setTrustSlide(i));
+
+function setTrustSlide(next){
+  trustIndex = (next + TRUST_SLIDES.length) % TRUST_SLIDES.length;
+  buildGhostWords(trustIndex);
+  playGhostWords();
+  paintCoach(trustIndex);
+  coachPhotoSpring.set({ opacity: 0 });
+  coachPhotoSpring.to({ opacity: 1 });
+  setTrustDots(trustIndex);
+}
+
+buildGhostWords(0);
+paintCoach(0);
+setTrustDots(0);
+onView(document.getElementById('trust-title'), playGhostWords);
+
+document.getElementById('trust-prev').addEventListener('click', () => setTrustSlide(trustIndex - 1));
+document.getElementById('trust-next').addEventListener('click', () => setTrustSlide(trustIndex + 1));
+
+inview(document.getElementById('pct-badge'), { opacity: 0, scale: 0.9 }, { opacity: 1, scale: 1 }, { tension: 220, friction: 22 });
+inview(document.getElementById('badge-card'), { opacity: 0, y: 24 },     { opacity: 1, y: 0 },     { tension: 200, friction: 26 }, 120);
+inview(coachAnim, { opacity: 0, y: 60, scale: 0.92 }, { opacity: 1, y: 0, scale: 1 }, { tension: 170, friction: 26 });
+
+/* ===================================================== programs */
+const programsTitle = document.getElementById('programs-title');
+revealOnView(programsTitle, stackedLines(programsTitle, ['Built for', 'every level'], { duration: 950, easing: EASE_OUT_EXPO, stagger: 120 }));
+
+const progList = document.getElementById('prog-list');
+PROGRAMS.forEach((p, i) => {
+  const li = document.createElement('li');
+  li.innerHTML = `
+    <a class="prog-row" href="${p.href}">
+      <div class="prog-inner">
+        <span class="prog-idx">${p.index}</span>
+        <span>
+          <span class="prog-name">${p.name}</span>
+          <span class="prog-desc">${p.description}</span>
+        </span>
+        <span class="prog-arrow"><svg aria-hidden="true"><use href="#i-arrow"></use></svg></span>
+      </div>
+    </a>`;
+  progList.appendChild(li);
+  const row = li.querySelector('.prog-row');
+  const inner = li.querySelector('.prog-inner');
+  inview(inner, { opacity: 0, y: 26 }, { opacity: 1, y: 0 }, { tension: 190, friction: 26 }, i * 90);
+  hoverSpring(row, li.querySelector('.prog-arrow svg'), { x: 0, opacity: 0.55 }, { x: 8, opacity: 1 }, { tension: 300, friction: 20 });
+});
+
+/* ===================================================== facilities */
+inview(document.getElementById('fac-icon'), { opacity: 0, scale: 0.85 }, { opacity: 1, scale: 1 }, { tension: 240, friction: 20 });
+
+const facTitle = document.getElementById('facilities-title');
+revealOnView(facTitle, stackedLines(facTitle, ['Tour Our', 'World-Class', 'Courts'], { duration: 950, easing: EASE_OUT_EXPO, stagger: 120 }));
+
+const facBody = document.getElementById('facilities-body');
+const facBodySpans = wordFade(
+  facBody,
+  "Reserve a court for focused practice, squad drills, or private sessions — and train in the same conditions you'll compete in.",
+  { duration: 700, easing: EASE_OUT_QUART, wordStagger: 28, delayIn: 250 }
+);
+onView(facBody, () => playClips(facBodySpans));
+
+const facCards = document.getElementById('fac-cards');
+COURTS.forEach((c, i) => {
+  const wrap = document.createElement('div');
+  wrap.className = 'fac-card';
+  wrap.innerHTML = `
+    <figure class="fac-fig">
+      <img src="${c.image}" alt="${c.alt}" loading="lazy" decoding="async">
+      <figcaption class="fac-cap ${c.tone}">
+        <span class="n">${c.name}</span>
+        <span class="d">${c.description}</span>
+      </figcaption>
+    </figure>`;
+  facCards.appendChild(wrap);
+  inview(wrap, { opacity: 0, y: 48 }, { opacity: 1, y: 0 }, { tension: 180, friction: 26 }, i * 140);
+  const fig = wrap.querySelector('.fac-fig');
+  hoverSpring(fig, wrap.querySelector('img'), { scale: 1 }, { scale: 1.03 }, { tension: 300, friction: 22 });
+});
+
+/* ===================================================== stats */
+const statsTitle = document.getElementById('stats-title');
+revealOnView(statsTitle, stackedLines(statsTitle, ['A club that', 'keeps score'], { duration: 950, easing: EASE_OUT_EXPO, stagger: 120 }));
+
+const statsGrid = document.getElementById('stats-grid');
+STATS.forEach((s, i) => {
+  const cell = document.createElement('div');
+  cell.className = 'stat';
+  cell.innerHTML = `
+    <dt class="sr-only">${s.label}</dt>
+    <dd><span class="v">${s.value}</span><span class="l">${s.label}</span></dd>`;
+  statsGrid.appendChild(cell);
+  inview(cell, { opacity: 0, y: 30 }, { opacity: 1, y: 0 }, { tension: 180, friction: 24 }, i * 110);
+});
+
+/* ===================================================== testimonials */
+const tstTitle = document.getElementById('testimonials-title');
+revealOnView(tstTitle, stackedLines(tstTitle, ['Loved by', 'the locker room'], { duration: 950, easing: EASE_OUT_EXPO, stagger: 120 }));
+
+const tstGrid = document.getElementById('tst-grid');
+TESTIMONIALS.forEach((t, i) => {
+  const li = document.createElement('li');
+  li.innerHTML = `
+    <figure class="tst-card">
+      <div>
+        <span class="tst-q" aria-hidden="true">&ldquo;</span>
+        <blockquote>${t.quote}</blockquote>
+      </div>
+      <figcaption>
+        <span class="n">${t.name}</span>
+        <span class="r">${t.role}</span>
+      </figcaption>
+    </figure>`;
+  tstGrid.appendChild(li);
+  const card = li.querySelector('.tst-card');
+  const s = inview(card, { opacity: 0, y: 40 }, { opacity: 1, y: 0 }, { tension: 180, friction: 26 }, i * 120);
+  /* hover lift takes over once the entrance has landed */
+  card.addEventListener('pointerenter', () => { if (mqDesktop.matches) s.to({ opacity: 1, y: -8 }); });
+  card.addEventListener('pointerleave', () => s.to({ opacity: 1, y: 0 }));
+});
+
+/* ===================================================== footer cta */
+const footCtaTitle = document.getElementById('foot-cta-title');
+revealOnView(footCtaTitle, stackedLines(footCtaTitle, ['Ready to', 'play?'], { duration: 950, easing: EASE_OUT_EXPO, stagger: 120 }));
+inview(document.getElementById('foot-cta-btn'), { opacity: 0, y: 20 }, { opacity: 1, y: 0 }, { tension: 200, friction: 24 }, 150);
+
+/* ===================================================== smooth-scroll anchors */
+document.addEventListener('click', e => {
+  const a = e.target.closest('a[href^="#"]');
+  if (!a) return;
+  const href = a.getAttribute('href');
+  if (!href || href === '#') return;
+  const target = document.querySelector(href);
+  if (!target) return;
+  e.preventDefault();
+  if (menuOpen) closeMenu();
+  lenis.scrollTo(target, { offset: 0 });
+});
+
+/* ===================================================== menu overlay */
+const menuEl       = document.getElementById('menu');
+const menuBackdrop = document.getElementById('menu-backdrop');
+const menuPanel    = document.getElementById('menu-panel');
+const menuLinks    = [...document.querySelectorAll('#menu-nav a')];
+let menuOpen = false;
+
+const menuBackdropSpring = new Spring({ opacity: 0 }, { tension: 260, friction: 30 }, v => { menuBackdrop.style.opacity = v.opacity; });
+const menuPanelSpring    = springEl(menuPanel, { opacity: 0, y: -24 }, { tension: 220, friction: 28 });
+const menuLinkSprings    = menuLinks.map(a => springEl(a, { opacity: 0, y: 28 }, { tension: 200, friction: 26 }));
+
+function openMenu(){
+  if (menuOpen) return;
+  menuOpen = true;
+  menuEl.classList.add('open');
+  menuEl.setAttribute('aria-hidden', 'false');
+  lockScroll();
+  menuBackdropSpring.to({ opacity: 1 });
+  menuPanelSpring.to({ opacity: 1, y: 0 });
+  menuLinkSprings.forEach((s, i) => {
+    s.set({ opacity: 0, y: 28 });
+    setTimeout(() => s.to({ opacity: 1, y: 0 }), 120 + i * 70);
+  });
+}
+function closeMenu(){
+  if (!menuOpen) return;
+  menuOpen = false;
+  menuEl.classList.remove('open');
+  menuEl.setAttribute('aria-hidden', 'true');
+  menuBackdropSpring.to({ opacity: 0 });
+  menuPanelSpring.to({ opacity: 0, y: -24 });
+  menuLinkSprings.forEach(s => s.to({ opacity: 0, y: 28 }));
+  unlockScroll();
+}
+document.querySelectorAll('[data-open-menu]').forEach(b => b.addEventListener('click', openMenu));
+document.getElementById('menu-close').addEventListener('click', closeMenu);
+menuBackdrop.addEventListener('click', closeMenu);
+document.getElementById('menu-book').addEventListener('click', () => { closeMenu(); openModal(); });
+
+/* ===================================================== contact modal */
+const modalEl       = document.getElementById('modal');
+const modalBackdrop = document.getElementById('modal-backdrop');
+const modalPanel    = document.getElementById('modal-panel');
+const modalForm     = document.getElementById('modal-form');
+const modalSuccess  = document.getElementById('modal-success');
+const submitBtn     = document.getElementById('modal-submit');
+const submitLabel   = document.getElementById('modal-submit-label');
+const successCopy   = document.getElementById('success-copy');
+const nameInput     = document.getElementById('f-name');
+let modalOpen = false, submitting = false, resetTimer = null;
+
+const modalTitleEl = document.getElementById('modal-title');
+const modalTitleClips = stackedLines(modalTitleEl, ['Come see', 'the courts'], { duration: 800, easing: EASE_OUT_EXPO, stagger: 90 });
+
+const modalBackdropSpring = new Spring({ opacity: 0 }, { tension: 240, friction: 30 }, v => { modalBackdrop.style.opacity = v.opacity; });
+const modalPanelSpring    = springEl(modalPanel, { opacity: 0, y: 28, scale: 0.96 }, { tension: 240, friction: 26 });
+
+function openModal(){
+  if (modalOpen) return;
+  modalOpen = true;
+  if (resetTimer){ clearTimeout(resetTimer); resetTimer = null; }
+  modalEl.classList.add('open');
+  modalEl.setAttribute('aria-hidden', 'false');
+  lockScroll();
+  modalBackdropSpring.to({ opacity: 1 });
+  modalPanelSpring.to({ opacity: 1, y: 0, scale: 1 });
+  modalTitleClips.forEach(c => c.classList.remove('in'));
+  playClips(modalTitleClips);
+  setTimeout(() => nameInput.focus(), 120);
+}
+function closeModal(){
+  if (!modalOpen) return;
+  modalOpen = false;
+  modalEl.classList.remove('open');
+  modalEl.setAttribute('aria-hidden', 'true');
+  modalBackdropSpring.to({ opacity: 0 });
+  modalPanelSpring.to({ opacity: 0, y: 28, scale: 0.96 });
+  unlockScroll();
+  resetTimer = setTimeout(() => {
+    modalForm.reset();
+    modalForm.hidden = false;
+    modalSuccess.hidden = true;
+    submitting = false;
+    submitBtn.disabled = false;
+    submitLabel.textContent = 'Request a visit';
+  }, 350);
+}
+document.querySelectorAll('[data-open-modal]').forEach(b => b.addEventListener('click', openModal));
+document.getElementById('modal-close').addEventListener('click', closeModal);
+modalBackdrop.addEventListener('click', closeModal);
+document.getElementById('success-done').addEventListener('click', closeModal);
+
+/* submit is a stub — nothing leaves the page */
+modalForm.addEventListener('submit', e => {
+  e.preventDefault();
+  if (submitting) return;
+  submitting = true;
+  submitBtn.disabled = true;
+  submitLabel.textContent = 'Sending…';
+  const first = (nameInput.value || '').trim().split(/\s+/)[0] || 'there';
+  setTimeout(() => {
+    successCopy.textContent = `Thanks, ${first} — our team will be in touch to lock in your visit.`;
+    modalForm.hidden = true;
+    modalSuccess.hidden = false;
+    submitting = false;
+    submitBtn.disabled = false;
+    submitLabel.textContent = 'Request a visit';
+  }, 900);
+});
+
+document.addEventListener('keydown', e => {
+  if (e.key !== 'Escape') return;
+  if (modalOpen) closeModal();
+  else if (menuOpen) closeMenu();
+});
+
+/* ===================================================== loader */
+const loaderEl   = document.getElementById('loader');
+const loaderMark = document.getElementById('loader-mark');
+const loaderFill = document.getElementById('loader-fill');
+
+const minVisible = REDUCED ? 200 : MIN_VISIBLE_MS;
+const exitMs     = REDUCED ? 0 : EXIT_MS;
+const fillDuration = REDUCED ? 200 : LOADER_FILL_DURATION;
+
+lockScroll();
+
+const loaderMarkSpring = springEl(loaderMark, { opacity: 0, y: 16 }, { tension: 200, friction: 22 });
+requestAnimationFrame(() => loaderMarkSpring.to({ opacity: 1, y: 0 }));
+
+loaderFill.style.transition = `transform ${fillDuration}ms ${EASE_IN_OUT_CUBIC} ${LOADER_FILL_DELAY}ms`;
+requestAnimationFrame(() => requestAnimationFrame(() => { loaderFill.style.transform = 'scaleX(1)'; }));
+
+let finished = false;
+function finishLoader(){
+  if (finished) return;
+  finished = true;
+
+  /* ready = true → the loader-gated hero animations run */
+  playClips(heroTitleClips);
+  playClips(heroTaglineClips);
+  setTimeout(() => collectionInSpring.to({ opacity: 1, y: 0 }), 650);
+  setTimeout(() => memberInSpring.to({ opacity: 1, y: 0 }), 780);
+  startCollectionAutoplay();
+
+  unlockScroll();
+
+  loaderEl.style.transition = exitMs ? `transform ${exitMs}ms ${EASE_IN_OUT_CUBIC}` : 'none';
+  requestAnimationFrame(() => { loaderEl.style.transform = 'translateY(-105%)'; });
+  setTimeout(() => loaderEl.remove(), exitMs);
+}
+
+let countdown = null;
+function startCountdown(){
+  if (countdown !== null) return;
+  countdown = setTimeout(finishLoader, minVisible);
+}
+if (document.readyState === 'complete') startCountdown();
+else window.addEventListener('load', startCountdown);
+setTimeout(startCountdown, REDUCED ? 400 : MAX_VISIBLE_MS);
+</script>
+</body>
+</html>
