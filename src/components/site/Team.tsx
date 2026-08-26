@@ -12,16 +12,16 @@ import { Reveal } from "./Reveal";
  */
 const TEAM = [
   {
-    name: "[Founder one]",
+    name: "Jack de la Figuera",
     role: "Co-founder & CEO",
-    bio: "What brought them here — the city they grew up in, the gap they saw in it, and the conviction that its people were the answer.",
-    initials: "FN",
+    bio: "At 18, Jack came up with the idea of a local connection that weaves a city's utilities and its social media into one shared network. A visionary and a risk-taker, he is the action-taker who turns the idea into momentum.",
+    initials: "JF",
   },
   {
-    name: "[Founder two]",
-    role: "Co-founder & CTO",
-    bio: "The builder behind the platform — the shared network that lets one city's tools become every city's, and the craft of keeping it local.",
-    initials: "FN",
+    name: "Tom de la Figuera",
+    role: "Co-founder & CFA",
+    bio: "At 22, Tom is the decision-evaluator behind the platform — owning finance and legal, and thinking short-term to keep every move sharp, measured and accountable.",
+    initials: "TF",
   },
 ];
 

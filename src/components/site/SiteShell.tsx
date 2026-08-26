@@ -1,4 +1,3 @@
-import { Cursor } from "./Cursor";
 import { Nav } from "./Nav";
 import { Footer } from "./Footer";
 
@@ -29,7 +28,6 @@ export function SiteShell({
         Skip to content
       </a>
 
-      <Cursor />
       <Nav hasHero={hasHero} />
 
       <main id="content">{children}</main>

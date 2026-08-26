@@ -578,18 +578,9 @@
         rgba(255, 255, 255, 0.02) 45%,
         rgba(255, 255, 255, 0) 66%
       );
-    animation: ca-glass-drift 16s var(--ca-ease) infinite;
   }
 
-  @keyframes ca-glass-drift {
-    0%,
-    100% {
-      transform: translateX(-1.5%);
-    }
-    50% {
-      transform: translateX(1.5%);
-    }
-  }
+
 
   /* Everything inside sits above the sheen. */
   .ca-nav__bar > * {
