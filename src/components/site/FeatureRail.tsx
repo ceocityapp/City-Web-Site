@@ -75,7 +75,7 @@ const CARDS: Card[] = [
     n: 3,
     title: "Posts",
     blurb: "A feed of the city's everyday life — what the people around you are up to.",
-    image: "/media/generated/vecinos-calle.jpg",
+    image: "/media/cards/posts.jpg",
   },
   {
     n: 4,
